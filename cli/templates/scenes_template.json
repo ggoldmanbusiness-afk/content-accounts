@@ -1,0 +1,66 @@
+{
+  "safe_sleep_rules": "CRITICAL SAFE SLEEP: Baby in crib must be in sleep sack (wearable blanket) OR swaddled (if under 3 months), NO loose blankets/pillows/stuffed animals in crib, baby on back, empty crib except for baby in sleep sack",
+
+  "aesthetic_styles": {
+    "painterly": "Soft painterly illustration, warm cozy atmosphere, moody shadows, grainy texture, NOT stock photo, dark academia aesthetic, cream and navy color palette, intimate moment, soft focus, golden lighting, NO visible text/letters/words/writing/signs/readable characters",
+    "iphone_photo": "iPhone photography, authentic candid moment, natural lighting, slightly grainy, real life, NOT posed, NOT professional, casual home setting, warm natural tones, shallow depth of field, intimate real-life moment, NO visible text/letters/words/writing"
+  },
+
+  "brand_anchor": {
+    "painterly": "Soft painterly illustration, warm cozy scene, peaceful atmosphere, overhead view, golden lamplight, evening atmosphere, cream and navy color palette, moody shadows, intimate peaceful moment, grainy texture, NOT stock photo, calm expression, soft focus, NO visible text/letters/words",
+    "iphone_photo": "iPhone photo of peaceful scene, soft morning light filtering through curtains, authentic candid moment, natural lighting, slightly grainy, warm pastel colors, real moment, casual home setting, shallow depth of field, NO visible text",
+    "description": "Primary brand visual - used for hook slides"
+  },
+
+  "scenes": {
+    "peaceful_moment": {
+      "prompt": "Peaceful calm scene, soft lighting, gentle atmosphere, serene mood",
+      "keywords": ["calm", "peace", "quiet", "rest", "serene"]
+    },
+
+    "focused_activity": {
+      "prompt": "Person engaged in focused activity, bright room, concentrated moment, productive atmosphere",
+      "keywords": ["focus", "activity", "work", "productivity", "learning"]
+    },
+
+    "cozy_home": {
+      "prompt": "Cozy home interior, warm lighting, comfortable setting, inviting atmosphere",
+      "keywords": ["home", "cozy", "comfort", "warm", "interior"]
+    },
+
+    "outdoor_nature": {
+      "prompt": "Person in natural outdoor setting, morning sunshine, fresh air, healthy outdoor time",
+      "keywords": ["outside", "outdoor", "sunlight", "morning", "fresh air", "nature"]
+    },
+
+    "connection_moment": {
+      "prompt": "Two people connecting, soft home lighting, emotional connection moment, supportive interaction",
+      "keywords": ["connection", "together", "support", "relationship", "emotion"]
+    },
+
+    "healthy_meal": {
+      "prompt": "Healthy meal preparation, bright kitchen, morning sunlight, nutritious food, natural healthy moment",
+      "keywords": ["meal", "food", "healthy", "nutrition", "cooking", "eating"]
+    },
+
+    "morning_routine": {
+      "prompt": "Morning routine activity, soft natural light, peaceful start to day, calm morning atmosphere",
+      "keywords": ["morning", "routine", "start", "day", "ritual"]
+    },
+
+    "evening_wind_down": {
+      "prompt": "Evening relaxation scene, dimly lit room, cozy atmosphere, peaceful nighttime ritual",
+      "keywords": ["evening", "night", "wind down", "relax", "bedtime"]
+    },
+
+    "achievement_moment": {
+      "prompt": "Moment of achievement or progress, bright lighting, positive atmosphere, accomplishment",
+      "keywords": ["achievement", "success", "progress", "goal", "win"]
+    },
+
+    "challenge_overcome": {
+      "prompt": "Overcoming a challenge, determined expression, supportive setting, growth moment",
+      "keywords": ["challenge", "difficult", "overcome", "struggle", "growth"]
+    }
+  }
+}

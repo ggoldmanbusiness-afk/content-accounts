@@ -1,0 +1,17 @@
+# Core dependencies
+openai>=1.0.0          # OpenRouter API client
+pillow>=10.0.0         # Image manipulation
+pilmoji>=2.0.0         # Emoji support in images
+pydantic>=2.0.0        # Config validation
+python-dotenv>=1.0.0   # Environment variables
+requests>=2.31.0       # HTTP requests (for Gemini API)
+numpy>=1.24.0          # Numerical operations for embeddings
+
+# CLI tools
+questionary>=2.0.0     # Interactive prompts
+rich>=13.0.0           # Formatted terminal output
+
+# Development (optional)
+pytest>=7.0.0
+mypy>=1.0.0
+ruff>=0.1.0

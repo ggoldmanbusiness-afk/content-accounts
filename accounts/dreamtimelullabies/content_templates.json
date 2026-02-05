@@ -1,0 +1,61 @@
+{
+  "style_guidelines": {
+    "tone": "casual but science-backed",
+    "voice": "conversational - like texting a friend",
+    "conversational_elements": [
+      "honestly",
+      "yes really",
+      "I know it sounds too simple",
+      "worth it though",
+      "trust me on this",
+      "who knew?",
+      "turns out"
+    ],
+    "examples": {
+      "bad_clinical": "Research indicates that sleep schedules significantly impact outcomes",
+      "good_conversational": "turns out bedtime battles aren't about willpower - they're about biology (who knew?)"
+    }
+  },
+  "formats": {
+    "habit_list": {
+      "description": "List of actionable tips/habits (hook + tips + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "tip", "position": "2-N", "max_words": 20},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a save-worthy carousel about {topic} for baby sleep.\n\nFormat: habit_list\nSlides: {slide_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{tip_end}: Individual actionable tips (max 20 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Clear, direct, evidence-based, practical\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"tip text\", \"type\": \"tip\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Evidence-based, actionable advice\n- No sensitive/controversial language\n- Hook score: min 12/20\n- Focus on save-worthy content"
+    },
+    "step_guide": {
+      "description": "Numbered step-by-step guide (hook + steps + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "step", "position": "2-N", "max_words": 20, "numbered": true},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a step-by-step guide carousel about {topic} for baby sleep.\n\nFormat: step_guide\nSteps: {step_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{step_end}: Numbered steps (max 20 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Clear, direct, evidence-based, practical\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"Step 1: action text\", \"type\": \"step\"}},\n    {{\"slide_num\": 3, \"text\": \"Step 2: action text\", \"type\": \"step\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Number each step clearly (Step 1:, Step 2:, etc.)\n- Evidence-based, sequential actions\n- No sensitive/controversial language\n- Hook score: min 12/20\n- Focus on save-worthy content"
+    }
+  },
+  "hook_examples": {
+    "number_formula": [
+      "5 bedtime mistakes keeping your baby awake",
+      "7 sleep cues you're missing",
+      "3 things to fix tonight for better sleep"
+    ],
+    "transformation": [
+      "The one thing that changed our nights",
+      "What finally worked for sleep regression"
+    ],
+    "wish_i_knew": [
+      "What I wish I knew about sleep schedules",
+      "The sleep tip every new parent needs"
+    ]
+  },
+  "cta_examples": [
+    "Save this for tonight's routine",
+    "Try this and see the difference",
+    "Bookmark for your next sleep struggle",
+    "Share with a tired parent",
+    "Keep this handy for bedtime"
+  ]
+}

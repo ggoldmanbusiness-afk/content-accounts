@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "account": "salesprofessional",
+  "max_history_size": 10,
+  "topics": [
+    {
+      "topic": "closing techniques",
+      "generated_at": "2026-02-05T15:31:37.858429",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/SalesProfessional/2026/02-february/2026-02-05_closing-techniques"
+    },
+    {
+      "topic": "negotiation tactics",
+      "generated_at": "2026-02-05T14:33:27.404946",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_negotiation-tactics"
+    },
+    {
+      "topic": "cold calling",
+      "generated_at": "2026-02-05T14:11:28.133381",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_cold-calling"
+    },
+    {
+      "topic": "prospecting",
+      "generated_at": "2026-02-05T14:00:04.651111",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_prospecting"
+    },
+    {
+      "topic": "handling rejection",
+      "generated_at": "2026-02-05T13:23:56.869238",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_handling-rejection"
+    },
+    {
+      "topic": "closing techniques",
+      "generated_at": "2026-02-05T13:12:07.031035",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_closing-techniques"
+    },
+    {
+      "topic": "objection handling",
+      "generated_at": "2026-02-05T12:59:50.890519",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_objection-handling"
+    },
+    {
+      "topic": "handling price objections",
+      "generated_at": "2026-02-05T12:40:37.751826",
+      "output_dir": "/Users/grantgoldman/Documents/GitHub/content-accounts/accounts/salesprofessional/output/2026/02-february/2026-02-05_handling-price-objections"
+    }
+  ]
+}

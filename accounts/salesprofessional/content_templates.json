@@ -1,0 +1,61 @@
+{
+  "style_guidelines": {
+    "tone": "confident but not arrogant",
+    "voice": "experienced pro sharing battle-tested tactics",
+    "conversational_elements": [
+      "here's the thing",
+      "works every time",
+      "I learned this the hard way",
+      "nobody talks about this",
+      "the truth is",
+      "most reps miss this",
+      "pro move"
+    ],
+    "examples": {
+      "bad_generic": "Research shows that rapport building increases conversion rates",
+      "good_conversational": "here's the thing - buyers don't care about your features until they trust you (most reps miss this)"
+    }
+  },
+  "formats": {
+    "habit_list": {
+      "description": "List of actionable sales tactics (hook + tips + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 18},
+        {"type": "tip", "position": "2-N", "max_words": 18},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a save-worthy carousel about {topic} for sales professionals.\n\nFormat: habit_list\nSlides: {slide_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 18 words)\n- Slides 2-{tip_end}: Individual tactical tips (max 18 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Confident, tactical, experience-based, results-focused\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"tip text\", \"type\": \"tip\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 18 words per slide\n- Battle-tested, actionable tactics\n- Professional but conversational\n- Hook score: min 14/20\n- Focus on save-worthy field-tested advice"
+    },
+    "step_guide": {
+      "description": "Numbered step-by-step sales process (hook + steps + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 18},
+        {"type": "step", "position": "2-N", "max_words": 18, "numbered": true},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a step-by-step sales process carousel about {topic}.\n\nFormat: step_guide\nSteps: {step_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 18 words)\n- Slides 2-{step_end}: Numbered tactical steps (max 18 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Confident, tactical, experience-based, results-focused\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"Step 1: action text\", \"type\": \"step\"}},\n    {{\"slide_num\": 3, \"text\": \"Step 2: action text\", \"type\": \"step\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 18 words per slide\n- Number each step clearly (Step 1:, Step 2:, etc.)\n- Sequential tactical actions\n- Professional but conversational\n- Hook score: min 14/20\n- Focus on proven processes"
+    }
+  },
+  "hook_examples": {
+    "number_formula": [
+      "5 closing mistakes costing you deals",
+      "7 objections top performers actually welcome",
+      "3 words that kill your cold calls"
+    ],
+    "transformation": [
+      "The one technique that doubled my close rate",
+      "What finally worked with resistant buyers"
+    ],
+    "wish_i_knew": [
+      "What I wish I knew about qualifying leads",
+      "The prospecting truth nobody tells new reps"
+    ]
+  },
+  "cta_examples": [
+    "Save this for your next call",
+    "Try this tomorrow and see results",
+    "Bookmark for deal review",
+    "Share with your team",
+    "Keep this for tough prospects"
+  ]
+}

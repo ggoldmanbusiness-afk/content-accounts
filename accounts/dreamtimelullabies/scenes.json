@@ -1,0 +1,66 @@
+{
+  "safe_sleep_rules": "CRITICAL SAFE SLEEP: Baby in crib must be in sleep sack (wearable blanket) OR swaddled (if under 3 months), NO loose blankets/pillows/stuffed animals in crib, baby on back, empty crib except for baby in sleep sack",
+
+  "aesthetic_styles": {
+    "painterly": "Soft painterly illustration, warm cozy atmosphere, moody shadows, grainy texture, NOT stock photo, dark academia aesthetic, cream and navy color palette, intimate moment, soft focus, golden lighting, NO visible text/letters/words/writing/signs/readable characters",
+    "iphone_photo": "iPhone photography, authentic candid moment, natural lighting, slightly grainy, real parenting life, NOT posed, NOT professional, casual home setting, warm natural tones, shallow depth of field, intimate real-life moment, NO visible text/letters/words/writing"
+  },
+
+  "brand_anchor": {
+    "painterly": "Soft painterly illustration, warm cozy nursery, peaceful sleeping baby in crib wearing sleep sack (wearable blanket), overhead view, golden lamplight, evening atmosphere, soft mobile hanging above, cream and navy color palette, moody shadows, intimate peaceful moment, grainy texture, NOT stock photo, calm expression, soft focus, SAFE SLEEP: baby in sleep sack, empty crib, no loose blankets, NO visible text/letters/words",
+    "iphone_photo": "iPhone photo of peaceful sleeping baby in cozy nursery wearing sleep sack (wearable blanket), soft morning light filtering through curtains, authentic candid moment, natural lighting, slightly grainy, warm pastel colors, real parenting moment, casual home setting, shallow depth of field, SAFE SLEEP: baby in sleep sack, empty crib, no loose blankets, NO visible text",
+    "description": "Primary brand visual - used for hook slides"
+  },
+
+  "scenes": {
+    "peaceful_sleeping": {
+      "prompt": "Baby peacefully sleeping in crib wearing sleep sack (wearable blanket), soft white noise machine glowing nearby, gentle nursery lighting, calm evening atmosphere, SAFE SLEEP: baby in sleep sack, empty crib, no loose blankets/pillows",
+      "keywords": ["sleep", "bedtime", "night", "nap", "rest"]
+    },
+
+    "bedtime_routine": {
+      "prompt": "Parent reading bedtime story to toddler in dimly lit room, cozy bedroom setting, warm bedside lamp, peaceful nighttime ritual",
+      "keywords": ["routine", "bedtime", "story", "book", "reading"]
+    },
+
+    "feeding_moment": {
+      "prompt": "Parent feeding baby in bright kitchen, morning sunlight, high chair, healthy meal time, natural parenting moment",
+      "keywords": ["feeding", "eating", "meal", "food", "breakfast", "lunch", "dinner", "solids"]
+    },
+
+    "playtime_learning": {
+      "prompt": "Toddler engaged in developmental play activity, colorful toys, bright room, focused learning moment, parent nearby",
+      "keywords": ["play", "activity", "learning", "development", "toy", "game"]
+    },
+
+    "outdoor_sunshine": {
+      "prompt": "Parent and toddler playing outside in morning sunshine, natural outdoor setting, fresh air, healthy outdoor time",
+      "keywords": ["outside", "outdoor", "sunlight", "morning", "fresh air", "nature"]
+    },
+
+    "bath_time": {
+      "prompt": "Gentle bath time routine, warm bathroom lighting, bubbles, calm water play, soothing evening ritual",
+      "keywords": ["bath", "water", "wash", "clean", "hygiene"]
+    },
+
+    "comfort_connection": {
+      "prompt": "Parent comforting toddler with gentle hug, soft home lighting, emotional connection moment, supportive parenting",
+      "keywords": ["comfort", "hug", "tantrum", "upset", "calm", "soothe", "emotion"]
+    },
+
+    "morning_wake": {
+      "prompt": "Parent gently waking toddler in bedroom, soft morning light through window, peaceful wake-up moment",
+      "keywords": ["wake", "morning", "rise", "start", "beginning"]
+    },
+
+    "cozy_nursery": {
+      "prompt": "Cozy nursery corner with soft lighting, comfortable rocking chair, organized baby essentials, calm parenting space",
+      "keywords": ["nursery", "room", "space", "organize", "setup"]
+    },
+
+    "safety_babyproof": {
+      "prompt": "Well-organized childproofed home space, safety gates visible, protected outlets, secure environment for toddler",
+      "keywords": ["safety", "babyproof", "secure", "protect", "hazard"]
+    }
+  }
+}

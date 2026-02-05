@@ -1,0 +1,63 @@
+{
+  "calm_blues": {
+    "name": "Calm Blues",
+    "description": "Peaceful blue tones for sleep, wellness, parenting",
+    "schemes": [
+      {"bg": "#E8F4F8", "text": "#2C3E50", "name": "soft_blue"},
+      {"bg": "#AED6F1", "text": "#2C3E50", "name": "sky_blue"},
+      {"bg": "#B3E5FC", "text": "#1A237E", "name": "light_blue"}
+    ]
+  },
+
+  "warm_neutrals": {
+    "name": "Warm Neutrals",
+    "description": "Cozy earth tones for cooking, lifestyle, home",
+    "schemes": [
+      {"bg": "#F5E6D3", "text": "#2C3E50", "name": "warm_cream"},
+      {"bg": "#E8D5C4", "text": "#3E2723", "name": "sand"},
+      {"bg": "#FFF8E7", "text": "#4E342E", "name": "vanilla"}
+    ]
+  },
+
+  "energetic_brights": {
+    "name": "Energetic Brights",
+    "description": "Vibrant colors for fitness, motivation, energy",
+    "schemes": [
+      {"bg": "#FFE5E5", "text": "#C62828", "name": "coral"},
+      {"bg": "#FFF3E0", "text": "#E65100", "name": "orange"},
+      {"bg": "#F3E5F5", "text": "#6A1B9A", "name": "purple"}
+    ]
+  },
+
+  "fresh_greens": {
+    "name": "Fresh Greens",
+    "description": "Natural green tones for health, wellness, nature",
+    "schemes": [
+      {"bg": "#C8E6C9", "text": "#1B5E20", "name": "soft_green"},
+      {"bg": "#E8F5E9", "text": "#2E7D32", "name": "mint"},
+      {"bg": "#DCEDC8", "text": "#33691E", "name": "lime"}
+    ]
+  },
+
+  "professional_grays": {
+    "name": "Professional Grays",
+    "description": "Clean modern tones for productivity, business",
+    "schemes": [
+      {"bg": "#ECEFF1", "text": "#263238", "name": "cool_gray"},
+      {"bg": "#F5F5F5", "text": "#212121", "name": "light_gray"},
+      {"bg": "#E0E0E0", "text": "#424242", "name": "medium_gray"}
+    ]
+  },
+
+  "pastel_mix": {
+    "name": "Pastel Mix",
+    "description": "Soft pastels for general lifestyle, creativity",
+    "schemes": [
+      {"bg": "#FCE4EC", "text": "#880E4F", "name": "pink"},
+      {"bg": "#E1F5FE", "text": "#01579B", "name": "cyan"},
+      {"bg": "#F3E5F5", "text": "#4A148C", "name": "lavender"},
+      {"bg": "#FFF9C4", "text": "#F57F17", "name": "yellow"},
+      {"bg": "#E8F5E9", "text": "#1B5E20", "name": "mint"}
+    ]
+  }
+}

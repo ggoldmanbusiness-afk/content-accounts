@@ -1,0 +1,62 @@
+{
+  "style_guidelines": {
+    "tone": "casual but evidence-backed",
+    "voice": "conversational - like texting a friend",
+    "conversational_elements": [
+      "honestly",
+      "yes really",
+      "I know it sounds too simple",
+      "worth it though",
+      "trust me on this",
+      "who knew?",
+      "turns out"
+    ],
+    "examples": {
+      "bad_clinical": "Research indicates that consistent routines significantly impact outcomes",
+      "good_conversational": "turns out consistency isn't about perfection - it's about patterns (who knew?)"
+    }
+  },
+
+  "formats": {
+    "habit_list": {
+      "description": "List of actionable tips/habits (hook + tips + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "tip", "position": "2-N", "max_words": 20},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ]
+    },
+    "step_guide": {
+      "description": "Numbered step-by-step guide (hook + steps + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "step", "position": "2-N", "max_words": 20, "numbered": true},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ]
+    }
+  },
+
+  "hook_examples": {
+    "number_formula": [
+      "5 mistakes keeping you stuck",
+      "7 signs you're missing",
+      "3 things to change today"
+    ],
+    "transformation": [
+      "The one thing that changed everything",
+      "What finally worked"
+    ],
+    "wish_i_knew": [
+      "What I wish I knew about [topic]",
+      "The tip everyone needs"
+    ]
+  },
+
+  "cta_examples": [
+    "Save this for later",
+    "Try this and see the difference",
+    "Bookmark for when you need it",
+    "Share with someone who needs this",
+    "Keep this handy"
+  ]
+}

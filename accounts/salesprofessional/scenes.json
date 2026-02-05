@@ -1,0 +1,74 @@
+{
+  "aesthetic_styles": {
+    "iphone_photo": "iPhone photography, professional business setting, natural office lighting, authentic moment, slightly grainy, real business life, NOT posed, modern workspace, professional attire, confident energy, shallow depth of field, NO visible text/letters/words/writing",
+    "painterly": "Clean minimal business photography, modern professional setting, sharp focus, professional lighting, confident business moment, contemporary office aesthetic, warm professional tones, NO visible text/letters/words"
+  },
+
+  "brand_anchor": {
+    "iphone_photo": "Professional salesperson in modern office reviewing deal on laptop, confident focused expression, clean desk setup, city view through window, natural daylight, business casual attire, authentic work moment, NO visible text",
+    "painterly": "Professional business meeting moment, modern conference room, confident handshake, natural business interaction, warm professional lighting, contemporary office setting, successful deal closing moment, NO visible text",
+    "description": "Primary brand visual - used for hook slides"
+  },
+
+  "scenes": {
+    "client_meeting": {
+      "prompt": "Professional salesperson in client meeting, modern conference room, engaged conversation, natural business interaction, professional attire, confident body language",
+      "keywords": ["meeting", "client", "presentation", "pitch", "demo", "discussion"]
+    },
+
+    "cold_calling": {
+      "prompt": "Salesperson on phone call at desk, focused expression, professional office setting, natural lighting, confident phone conversation, organized workspace",
+      "keywords": ["call", "phone", "prospect", "outreach", "cold", "contact"]
+    },
+
+    "deal_closing": {
+      "prompt": "Professional handshake in modern office, successful deal moment, confident business interaction, warm professional setting, celebration of closed deal",
+      "keywords": ["close", "deal", "contract", "agreement", "win", "success", "signed"]
+    },
+
+    "travel_work": {
+      "prompt": "Business professional working on laptop in airport lounge, professional travel setting, focused on work while traveling, mobile productivity",
+      "keywords": ["travel", "airport", "remote", "mobile", "road", "territory"]
+    },
+
+    "networking_event": {
+      "prompt": "Professional networking at business conference, exchanging business cards, professional attire, engaging conversation, modern venue",
+      "keywords": ["network", "event", "conference", "connection", "relationship", "referral"]
+    },
+
+    "crm_planning": {
+      "prompt": "Salesperson reviewing CRM dashboard on laptop, organized digital workspace, data analysis, strategic planning moment, professional office",
+      "keywords": ["crm", "planning", "strategy", "data", "pipeline", "forecast", "organize"]
+    },
+
+    "negotiation": {
+      "prompt": "Professional business negotiation, two people at conference table, documents visible, serious business discussion, professional setting",
+      "keywords": ["negotiate", "objection", "pricing", "terms", "discuss", "compromise"]
+    },
+
+    "presentation": {
+      "prompt": "Salesperson presenting to small group, modern presentation room, confident stance, professional business pitch, engaged audience",
+      "keywords": ["present", "pitch", "demo", "show", "explain", "demonstrate"]
+    },
+
+    "research_prep": {
+      "prompt": "Professional researching client on laptop, taking notes, preparation work, focused concentration, organized desk, professional environment",
+      "keywords": ["research", "prep", "prepare", "study", "learn", "analyze"]
+    },
+
+    "success_celebration": {
+      "prompt": "Professional celebrating win at desk, subtle fist pump, confident smile, modern office, achievement moment, professional satisfaction",
+      "keywords": ["win", "success", "achieve", "goal", "target", "celebrate", "milestone"]
+    },
+
+    "coaching_moment": {
+      "prompt": "Sales manager coaching team member, professional mentoring moment, collaborative workspace, supportive business interaction",
+      "keywords": ["coach", "mentor", "train", "teach", "develop", "improve", "learn"]
+    },
+
+    "virtual_meeting": {
+      "prompt": "Professional on video call, modern home office setup, professional background, engaged in virtual sales meeting, confident digital presence",
+      "keywords": ["virtual", "zoom", "remote", "video", "online", "digital", "webinar"]
+    }
+  }
+}
