@@ -432,6 +432,45 @@ def step_9_generate_samples(account_dir: Path, config: AccountConfig):
         return False
 
 
+def _generate_scoring_references(content_pillars: list, value_proposition: str) -> dict:
+    """Generate niche-specific scoring references from content pillars.
+
+    Creates reference examples for the semantic hook scorer that match
+    the account's niche, so hooks are scored against relevant patterns
+    rather than generic marketing templates.
+    """
+    # Pick up to 4 representative pillars for examples
+    sample_pillars = [p.replace("_", " ") for p in content_pillars[:8]]
+
+    # Build niche-aware examples for each scoring dimension
+    curiosity_gap = []
+    actionability = []
+    specificity = []
+    scroll_stop = []
+
+    for pillar in sample_pillars[:4]:
+        curiosity_gap.append(f"what I wish someone told me about {pillar}")
+        actionability.append(f"5 things to try tonight for {pillar}")
+
+    for pillar in sample_pillars[:4]:
+        specificity.append(f"3 signs you need to change your approach to {pillar}")
+        scroll_stop.append(f"stop overthinking {pillar} - do this instead")
+
+    # Add value-proposition-based examples
+    if value_proposition:
+        vp_short = value_proposition.lower().split(".")[0].strip()
+        curiosity_gap.append(f"the real reason most people struggle with {vp_short}")
+        actionability.append(f"the exact routine that works for {vp_short}")
+        scroll_stop.append(f"the boring thing that actually fixed {vp_short}")
+
+    return {
+        "curiosity_gap": curiosity_gap,
+        "actionability": actionability,
+        "specificity": specificity,
+        "scroll_stop": scroll_stop,
+    }
+
+
 def create_account_files(config_data: dict) -> Path:
     """Create account directory and files"""
     account_name = config_data["account_name"]
@@ -485,6 +524,19 @@ def create_account_files(config_data: dict) -> Path:
     # Copy scenes.json and content_templates.json
     shutil.copy(templates_dir / "scenes_template.json", account_dir / "scenes.json")
     shutil.copy(templates_dir / "content_templates.json", account_dir / "content_templates.json")
+
+    # Generate niche-specific scoring references from content pillars
+    scoring_refs = _generate_scoring_references(
+        config_data["content_pillars"],
+        config_data["brand_identity"]["value_proposition"],
+    )
+    content_templates_path = account_dir / "content_templates.json"
+    with open(content_templates_path, 'r') as f:
+        ct = json.load(f)
+    ct["scoring_references"] = scoring_refs
+    with open(content_templates_path, 'w') as f:
+        json.dump(ct, f, indent=2)
+        f.write("\n")
 
     # Create .env if keys provided
     if config_data.get("api_keys") and not config_data["api_keys"].get("use_env"):
