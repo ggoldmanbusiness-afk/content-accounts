@@ -121,9 +121,17 @@ COLOR_SCHEMES = [
 
 # Visual Style
 VISUAL_STYLE = {
-    "mode": "text_only_slides",
+    "mode": "text_only_slides",  # Default mode (formats can override via CLI --format flag)
     "font_style": "clean_sans_serif",
-    "slide_layout": "minimal_checklist"
+    "slide_layout": "minimal_checklist",
+    # Pexels mode settings (used when format requires stock photos)
+    "pexels_mode": {
+        "image_source": "pexels",
+        "image_quality": "large2x",  # 1920px
+        "text_color": "#FFFFFF",
+        "text_shadow": True,
+        "max_words_per_slide": 10
+    }
 }
 
 # Carousel Strategy
@@ -131,10 +139,26 @@ CAROUSEL_STRATEGY = {
     "content_type": "save_worthy_tips",
     "slide_count_range": (5, 10),  # 5-10 slides per carousel
     "default_slide_count": 5,
-    "format": "checklist_framework",
+    "format": "checklist_framework",  # Default format (override via CLI --format flag)
     "cta_focus": "save_this",
     "caption_style": "hashtags_only"
 }
+
+# Pexels Configuration (for stock photo formats)
+PEXELS_CONFIG = {
+    "orientation": "portrait",  # 9:16 ratio for Instagram/TikTok
+    "quality": "large2x",  # 1920px resolution
+    "per_page": 10,
+    "history_max": 50  # Track last 50 used images to avoid duplicates
+}
+
+# Format Options (accessible via CLI --format flag)
+# Available formats:
+# - "scripts" - Scripts That Work (2,746 views proven, Pexels images)
+# - "boring_habits" - 5 Boring Habits (1,386 views proven, Pexels images)
+# - "how_to" - How to [Outcome] (2,049 views proven, Pexels images)
+# - "habit_list" - Default habit/tip list (current format, text-only)
+# - "step_guide" - Step-by-step guide (current format, text-only)
 
 # Output Configuration
 OUTPUT_CONFIG = {

@@ -51,6 +51,32 @@
       "The sleep tip every new parent needs"
     ]
   },
+  "scoring_references": {
+    "curiosity_gap": [
+      "what I wish someone told me about teething",
+      "the real reason your toddler fights bedtime",
+      "what to say when they won't stop crying (this actually works)",
+      "what nobody tells you about the 4-month sleep regression"
+    ],
+    "actionability": [
+      "the exact bedtime routine that works for 6-month-olds",
+      "5 things to try tonight when nothing else works",
+      "what to say when your toddler melts down at the store",
+      "the exact words that calm a screaming baby in 30 seconds"
+    ],
+    "specificity": [
+      "3 signs your baby is ready to drop a nap",
+      "the one thing I changed at 7pm that fixed our nights",
+      "5 phrases that calm a tantrum in under 2 minutes",
+      "what to buy at exactly the right time for each age"
+    ],
+    "scroll_stop": [
+      "stop googling sleep schedules - do this instead",
+      "the boring thing that actually fixed our sleep",
+      "I stopped fighting bedtime and here's what happened",
+      "the parenting hack that sounds wrong but actually works"
+    ]
+  },
   "cta_examples": [
     "Save this for tonight's routine",
     "Try this and see the difference",

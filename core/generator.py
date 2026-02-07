@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 from pilmoji import Pilmoji
 
 from core.config_schema import AccountConfig
-from core.image_generator import GeminiImageGenerator
+from core.image_generator import GeminiImageGenerator, ImageGenerator
 from core.utils import SlugGenerator, TopicTracker, determine_content_format
 from core.llm_client import LLMClient
 from core.semantic_scorer import SemanticHookScorer
@@ -72,9 +72,6 @@ class BaseContentGenerator:
         # Initialize LLM client
         self.llm = LLMClient(api_key=openrouter_key, model=account_config.claude_model)
 
-        # Initialize semantic hook scorer
-        self.semantic_scorer = SemanticHookScorer(api_key=openrouter_key, use_openrouter=True)
-
         # Initialize Gemini image generator (optional)
         self.gemini = None
         if gemini_key:
@@ -97,6 +94,15 @@ class BaseContentGenerator:
         else:
             logger.warning("Content templates not found - using hardcoded defaults")
             self.content_templates = None
+
+        # Initialize semantic hook scorer with niche-specific references
+        custom_refs = None
+        if self.content_templates:
+            custom_refs = self.content_templates.get("scoring_references")
+        self.semantic_scorer = SemanticHookScorer(
+            api_key=openrouter_key, use_openrouter=True,
+            custom_references=custom_refs
+        )
 
         # Initialize utilities
         self.slug_generator = SlugGenerator()
@@ -136,15 +142,23 @@ class BaseContentGenerator:
 
         # Intelligent format selection if not specified
         if content_format is None:
-            content_format = determine_content_format(topic)
-            logger.info(f"📋 Auto-selected format: {content_format} (based on topic)")
+            # Use default from config if available, else determine from topic
+            content_format = self.config.carousel_strategy.format or determine_content_format(topic)
+            logger.info(f"📋 Auto-selected format: {content_format} (based on topic/config)")
 
-        # Validate format
-        if content_format not in ["habit_list", "step_guide"]:
-            raise ValueError(f"Invalid format: {content_format}")
+        # Validate format - support both legacy and new proven formats
+        valid_formats = ["habit_list", "step_guide", "scripts", "boring_habits", "how_to"]
+        if content_format not in valid_formats:
+            raise ValueError(f"Invalid format: {content_format}. Valid options: {valid_formats}")
 
         if not (5 <= num_items <= 10):
             raise ValueError(f"Invalid slide count: {num_items}. Must be 5-10.")
+
+        # Cap all formats at 5 items to keep carousels concise
+        formats_to_cap = ["boring_habits", "habit_list", "step_guide", "scripts", "how_to"]
+        if content_format in formats_to_cap and num_items > 5:
+            logger.info(f"⚠️  Capping {content_format} from {num_items} to 5 items (max length)")
+            num_items = 5
 
         logger.info(f"Generating {content_format} carousel about: {topic}")
         logger.info(f"Hook strategy: {hook_strategy}, Items: {num_items}")
@@ -173,48 +187,70 @@ class BaseContentGenerator:
             content=content
         )
 
-        # 3. Generate images with Gemini
-        logger.info("Generating images with Gemini (9:16 aspect ratio)...")
-        images = []
-        reference_image_bytes = None  # For visual consistency
+        # 3. Generate images (Pexels for proven formats, Gemini for legacy)
+        pexels_formats = ["scripts", "boring_habits", "how_to"]
+        use_pexels = content_format in pexels_formats
+        num_slides = len(content["slides"])
 
-        for i, prompt in enumerate(image_prompts, 1):
-            logger.info(f"Generating slide {i}/{len(image_prompts)}...")
-            full_prompt = f"{prompt}, vertical portrait format, 9:16 aspect ratio"
-
-            # Add visual consistency instruction for slides 2+
-            if i > 1:
-                full_prompt += ", IMPORTANT: maintain the same visual style, color palette, lighting, and artistic approach as the reference image"
-
-            # CRITICAL: Enforce safe sleep guidelines for any baby/crib/sleep imagery
-            sleep_keywords = ["baby", "crib", "sleep", "nursery", "nap", "bedtime"]
-            if any(keyword in full_prompt.lower() for keyword in sleep_keywords):
-                safe_sleep = self.scenes.get("safe_sleep_rules", "")
-                if safe_sleep:
-                    full_prompt += f", {safe_sleep}"
-                    logger.debug("✓ Safe sleep guidelines enforced")
-
-            # Use reference image for consistency
-            image_bytes = self.gemini.generate_image(
-                full_prompt,
-                reference_image=reference_image_bytes if i > 1 else None
+        if use_pexels:
+            logger.info(f"Fetching {num_slides} Pexels stock photos for {content_format} format...")
+            image_gen = ImageGenerator(
+                mode="pexels",
+                pexels_key=os.getenv("PEXELS_API_KEY")
+            )
+            image_bytes_list = image_gen.generate_for_carousel(
+                topic=topic,
+                num_slides=num_slides,
+                format_name=content_format
             )
 
-            if image_bytes:
-                # Save first image as reference
-                if i == 1:
-                    reference_image_bytes = image_bytes
-                    logger.info("Saved first image as reference for visual consistency")
+            if not image_bytes_list or len(image_bytes_list) < num_slides:
+                logger.error(f"Failed to fetch enough Pexels photos ({len(image_bytes_list)}/{num_slides})")
+                return {"error": "Failed to fetch Pexels photos"}
 
-                # Convert to PIL Image
-                img = Image.open(io.BytesIO(image_bytes))
-
-                # Resize/crop to exact 9:16 (1080x1920)
+            images = []
+            for img_bytes in image_bytes_list:
+                img = Image.open(io.BytesIO(img_bytes))
                 img = self._resize_to_instagram(img)
                 images.append(img)
-            else:
-                logger.error(f"Failed to generate image for slide {i}")
-                return {"error": f"Failed to generate image for slide {i}"}
+
+        else:
+            # Legacy Gemini generation for existing formats
+            logger.info("Generating images with Gemini (9:16 aspect ratio)...")
+            images = []
+            reference_image_bytes = None
+
+            for i, prompt in enumerate(image_prompts, 1):
+                logger.info(f"Generating slide {i}/{len(image_prompts)}...")
+                full_prompt = f"{prompt}, vertical portrait format, 9:16 aspect ratio"
+
+                if i > 1:
+                    full_prompt += ", IMPORTANT: maintain the same visual style, color palette, lighting, and artistic approach as the reference image"
+
+                # CRITICAL: Enforce safe sleep guidelines for any baby/crib/sleep imagery
+                sleep_keywords = ["baby", "crib", "sleep", "nursery", "nap", "bedtime"]
+                if any(keyword in full_prompt.lower() for keyword in sleep_keywords):
+                    safe_sleep = self.scenes.get("safe_sleep_rules", "")
+                    if safe_sleep:
+                        full_prompt += f", {safe_sleep}"
+                        logger.debug("✓ Safe sleep guidelines enforced")
+
+                image_bytes = self.gemini.generate_image(
+                    full_prompt,
+                    reference_image=reference_image_bytes if i > 1 else None
+                )
+
+                if image_bytes:
+                    if i == 1:
+                        reference_image_bytes = image_bytes
+                        logger.info("Saved first image as reference for visual consistency")
+
+                    img = Image.open(io.BytesIO(image_bytes))
+                    img = self._resize_to_instagram(img)
+                    images.append(img)
+                else:
+                    logger.error(f"Failed to generate image for slide {i}")
+                    return {"error": f"Failed to generate image for slide {i}"}
 
         # 4. Create output directory
         output_dir = self._create_output_dir(topic)
@@ -318,22 +354,62 @@ class BaseContentGenerator:
             value_prop = self.config.brand_identity.value_proposition or ""
             niche = value_prop if value_prop else self.config.brand_identity.personality
 
-        # Retry up to 10 times for viral hooks to ensure quality
-        max_attempts = 10 if hook_strategy == "viral" else 1
+        # Extract hook examples and formulas from account config
+        hook_examples = None
+        if self.content_templates:
+            hook_examples = self.content_templates.get("hook_examples")
+        hook_formulas = getattr(self.config, 'hook_formulas', None)
+
+        # Retry hooks for quality - cap proven formats at 3 to save API calls
+        proven_formats = ["scripts", "boring_habits", "how_to"]
+        if hook_strategy != "viral":
+            max_attempts = 1
+        elif content_format in proven_formats:
+            max_attempts = 3
+        else:
+            max_attempts = 10
         score_feedback = None
 
         for attempt in range(max_attempts):
-            # Build prompt
+            # Build prompt based on format
             if content_format == "habit_list":
                 prompt = prompts.build_habit_list_prompt(
                     topic, num_items, hook_strategy, max_words, score_feedback,
-                    niche=niche, content_templates=self.content_templates
+                    niche=niche, content_templates=self.content_templates,
+                    hook_examples=hook_examples, hook_formulas=hook_formulas,
                 )
-            else:  # step_guide
+            elif content_format == "step_guide":
                 prompt = prompts.build_step_guide_prompt(
                     topic, num_items, hook_strategy, max_words, score_feedback,
-                    niche=niche, content_templates=self.content_templates
+                    niche=niche, content_templates=self.content_templates,
+                    hook_examples=hook_examples, hook_formulas=hook_formulas,
                 )
+            elif content_format == "scripts":
+                prompt = prompts.build_scripts_prompt(
+                    topic, num_categories=num_items,
+                    max_words=max_words, niche=niche,
+                    score_feedback=score_feedback,
+                    hook_examples=hook_examples, hook_formulas=hook_formulas,
+                    content_templates=self.content_templates,
+                )
+            elif content_format == "boring_habits":
+                prompt = prompts.build_boring_habits_prompt(
+                    topic, num_habits=num_items,
+                    max_words=max_words, niche=niche,
+                    score_feedback=score_feedback,
+                    hook_examples=hook_examples, hook_formulas=hook_formulas,
+                    content_templates=self.content_templates,
+                )
+            elif content_format == "how_to":
+                prompt = prompts.build_how_to_prompt(
+                    topic, num_steps=num_items,
+                    max_words=max_words, niche=niche,
+                    score_feedback=score_feedback,
+                    hook_examples=hook_examples, hook_formulas=hook_formulas,
+                    content_templates=self.content_templates,
+                )
+            else:
+                raise ValueError(f"Unsupported format: {content_format}")
 
             # Build system prompt from brand identity
             system_prompt = prompts.build_system_prompt(
@@ -350,10 +426,10 @@ class BaseContentGenerator:
                 temperature=0.8,
                 max_tokens=1000
             )
-            slides = self._parse_claude_response(content_text, content_format, topic, num_items)
+            parsed_content = self._parse_claude_response(content_text, content_format, topic, num_items)
+            slides = parsed_content["slides"]
 
-
-            # Score hook if using viral strategy
+            # Score hook if using viral strategy (all formats go through scoring)
             if hook_strategy == "viral":
                 hook_text = slides[0]["text"]
                 score_result = self._score_hook(hook_text, min_hook_score, max_words)
@@ -375,13 +451,15 @@ class BaseContentGenerator:
                     else:
                         logger.warning(f"⚠️  Using best attempt after {max_attempts} tries")
             else:
-                # Template strategy - no scoring
+                # Template strategy - no hook scoring needed
                 break
 
         return {
             "format": content_format,
             "topic": topic,
-            "slides": slides
+            "slides": slides,
+            "caption": parsed_content.get("caption"),  # Include caption if provided
+            "pexels_query": parsed_content.get("pexels_query")
         }
 
 
@@ -391,15 +469,45 @@ class BaseContentGenerator:
         content_format: str,
         topic: str,
         num_items: int
-    ) -> List[Dict]:
-        """Parse Claude's response into slides"""
+    ) -> Dict:
+        """
+        Parse Claude's response into slides
+
+        Returns:
+            Dict with 'slides' array and optional 'caption', 'pexels_query' fields
+        """
+        # Try JSON format first (for new proven formats)
+        if content_format in ["scripts", "boring_habits", "how_to"]:
+            try:
+                # Extract JSON from response (may have wrapper text)
+                json_match = re.search(r'\{.*\}', content_text, re.DOTALL)
+                if json_match:
+                    data = json.loads(json_match.group(0))
+
+                    # Convert to expected format
+                    slides = []
+                    for slide_data in data.get("slides", []):
+                        slides.append({"text": slide_data["text"]})
+
+                    return {
+                        "slides": slides,
+                        "caption": data.get("caption"),
+                        "pexels_query": data.get("pexels_query")
+                    }
+                else:
+                    logger.warning(f"No JSON found in response for {content_format} format, falling back to text parsing")
+            except json.JSONDecodeError as e:
+                logger.warning(f"Failed to parse JSON response for {content_format}: {e}, falling back to text parsing")
+
+        # Legacy text parsing (for habit_list, step_guide)
         slides = []
 
-        # Clean up response
-        content_text = content_text.replace('SLIDE 1:', '').replace('SLIDE 2:', '')
-        content_text = content_text.replace('SLIDE 3:', '').replace('SLIDE 4:', '')
-        content_text = content_text.replace('SLIDE 5:', '').replace('SLIDE 6:', '')
-        content_text = content_text.replace('SLIDE 7:', '').replace('SLIDE 8:', '')
+        # Clean up response - remove meta-text like "# SLIDE 1", "**SLIDE 1:**", "---", etc
+        content_text = re.sub(r'\*\*SLIDE\s+\d+\s*(\(.*?\))?\s*\*\*:?\s*', '', content_text, flags=re.IGNORECASE)  # **SLIDE X (Hook):**
+        content_text = re.sub(r'#?\s*SLIDE\s+\d+:?\s*(\(.*?\))?\s*', '', content_text, flags=re.IGNORECASE)  # # SLIDE X:
+        content_text = content_text.replace('---', '')  # Remove separator lines
+        content_text = re.sub(r'^#\s+.*$', '', content_text, flags=re.MULTILINE)  # Remove any line starting with #
+        content_text = re.sub(r'^\*\*:\*\*\s*$', '', content_text, flags=re.MULTILINE)  # Remove leftover **:**
 
         lines = content_text.strip().split('\n')
 
@@ -407,17 +515,26 @@ class BaseContentGenerator:
         hook_text = None
         for line in lines:
             line = line.strip()
-            # Skip empty, tip/step lines, and CTA lines
-            if line and not line.lower().startswith(('tip ', 'step ')) and not line.lower().startswith('save this'):
+            # Skip empty, tip/step/habit/script lines, CTA lines, and all-caps titles
+            if line and not line.lower().startswith(('tip ', 'step ', 'habit ', 'script ')) and not line.lower().startswith('save this'):
+                # Skip all-caps titles (e.g., "HOW TO HANDLE PICKY EATING")
+                if line.isupper():
+                    continue
                 hook_text = line
                 break
 
         if not hook_text:
-            # Fallback hook
+            # Fallback hook based on format (grammatically safe)
             if content_format == "habit_list":
-                hook_text = f"{num_items} boring {topic} habits that changed everything"
+                hook_text = f"{num_items} tips about {topic} that actually work"
+            elif content_format == "boring_habits":
+                hook_text = f"{num_items} simple habits for {topic} that changed everything"
+            elif content_format == "scripts":
+                hook_text = f"what to say about {topic}"
+            elif content_format == "how_to":
+                hook_text = f"how to handle {topic}"
             else:
-                hook_text = f"how to build a {topic} that actually works"
+                hook_text = f"the {topic} guide that actually works"
 
         # Clean hook text
         hook_text = self._clean_text(hook_text)
@@ -446,11 +563,13 @@ class BaseContentGenerator:
             if 'save this' in line.lower():  # Stop at CTA
                 break
 
-            # Detect if this line starts a tip
-            # Look for "tip N:" or "step N:" patterns
+            # Detect if this line starts a tip/step/habit/script
+            # Look for "tip N:", "step N:", "habit N:", "script N:" patterns
             is_tip_start = (
                 line.lower().startswith('tip ') or
-                line.lower().startswith('step ')
+                line.lower().startswith('step ') or
+                line.lower().startswith('habit ') or
+                line.lower().startswith('script ')
             )
 
             if not is_tip_start:
@@ -475,7 +594,7 @@ class BaseContentGenerator:
                         peek_line = lines[k].strip()
                         # Check if peeked line starts a new tip
                         peek_is_tip = (
-                            peek_line.lower().startswith(('tip ', 'step ')) or
+                            peek_line.lower().startswith(('tip ', 'step ', 'habit ', 'script ')) or
                             'save this' in peek_line.lower()
                         )
                         if peek_is_tip:
@@ -495,7 +614,7 @@ class BaseContentGenerator:
                     break
 
                 # Check if this line itself starts a new tip
-                if continuation_line.lower().startswith(('tip ', 'step ')):
+                if continuation_line.lower().startswith(('tip ', 'step ', 'habit ', 'script ')):
                     # This line starts next tip, stop before it
                     break
 
@@ -536,7 +655,11 @@ class BaseContentGenerator:
             else:
                 slides.append({"text": "save this so you can come back to it when you need it"})
 
-        return slides[:target_slides]
+        return {
+            "slides": slides[:target_slides],
+            "caption": None,  # Legacy formats use generated captions
+            "pexels_query": None
+        }
 
     def _score_hook(self, hook_text: str, min_score: int = 16, max_words: int = 20) -> Dict:
         """
@@ -839,21 +962,18 @@ Generate {len(slides_text)} contextual scene descriptions:"""
         return img
 
     def _apply_hook_visual_drama(self, img: Image.Image) -> Image.Image:
-        """Apply aggressive image processing for scroll-stopping hook impact"""
-        # 1. Brightness: Darker than content slides (30% vs 40%)
+        """Apply minimal processing to keep photo bright and vibrant"""
+        # Keep photo bright - only slight darkening for text contrast
         enhancer = ImageEnhance.Brightness(img)
-        img = enhancer.enhance(0.3)
+        img = enhancer.enhance(0.95)  # 5% darker (was 70% darker!)
 
-        # 2. Contrast: Boost to 1.4x for drama
+        # Slight contrast boost to make colors pop
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(1.4)
+        img = enhancer.enhance(1.1)  # Subtle (was 1.4)
 
-        # 3. Color temperature: Slightly cooler (0.95)
-        enhancer = ImageEnhance.Color(img)
-        img = enhancer.enhance(0.95)
-
-        # 4. Vignette effect (darken edges)
-        img = self._apply_vignette(img, intensity=0.3)
+        # Keep warm tones (no color temperature change)
+        # Removed: Color desaturation
+        # Removed: Heavy vignette effect
 
         return img
 
@@ -892,14 +1012,14 @@ Generate {len(slides_text)} contextual scene descriptions:"""
     ) -> Image.Image:
         """Add text overlay with pilmoji (emoji support)"""
 
-        # Apply image adjustments (darkening for readability)
+        # Apply minimal image adjustments to keep photos bright
         if is_hook:
-            # Apply aggressive visual drama for hooks
+            # Apply minimal visual adjustments for hooks
             img = self._apply_hook_visual_drama(img)
         else:
-            # Slight darkening for content slides
+            # Keep content slides bright too (minimal darkening)
             enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.75)  # 25% darker
+            img = enhancer.enhance(0.95)  # Only 5% darker (was 25% darker)
 
         # Store original dimensions
         original_width, original_height = img.size
@@ -973,7 +1093,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
 
                     self._draw_text_with_stroke(
                         pilmoji, (x + edge_padding, y + edge_padding), line, font,
-                        stroke_width=6
+                        stroke_width=10  # Increased from 6 for bolder outline like screenshot
                     )
                     y += line_height
 
@@ -1106,6 +1226,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
     def _generate_caption(self, content: Dict) -> str:
         """Generate contextual caption based on carousel content"""
         try:
+            # Use consistent caption generation for all formats
             slides = content.get("slides", [])
             if not slides:
                 return self._generate_caption_fallback()

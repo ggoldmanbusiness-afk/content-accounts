@@ -3,7 +3,74 @@ Prompt Templates
 Reusable prompt templates for content generation
 """
 
-from typing import Optional, Dict
+from typing import Optional, Dict, List
+
+
+def _build_dynamic_hook_instruction(
+    topic: str,
+    format_identity: str,
+    max_words: int,
+    num_items: int,
+    niche: str = "general content",
+    score_feedback: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
+) -> str:
+    """Build a dynamic hook instruction block that lets Claude generate creative hooks."""
+
+    # Build retry warning if previous attempt failed
+    retry_warning = ""
+    if score_feedback:
+        retry_warning = f"""⚠️  PREVIOUS HOOK FAILED (scored {score_feedback['total']}/20, need {score_feedback.get('min_score', 16)}+)
+Fix these issues:
+"""
+        for issue in score_feedback.get("feedback", []):
+            retry_warning += f"- {issue}\n"
+        retry_warning += "\n"
+
+    # Build examples section from account config
+    examples_section = ""
+    all_examples = []
+
+    if hook_examples:
+        for category, examples in hook_examples.items():
+            if isinstance(examples, list):
+                all_examples.extend(examples)
+
+    if hook_formulas:
+        all_examples.extend(hook_formulas)
+
+    if all_examples:
+        formatted = "\n".join(f"- {ex}" for ex in all_examples[:8])
+        examples_section = f"""
+EXAMPLES OF HOOKS THAT PERFORM WELL (for inspiration, do NOT copy):
+{formatted}
+"""
+    else:
+        examples_section = """
+EXAMPLES OF HOOKS THAT PERFORM WELL (for inspiration, do NOT copy):
+- 5 bedtime mistakes keeping your baby awake
+- the one thing that changed our nights
+- why your morning routine keeps failing (it's not what you think)
+- 3 things to fix tonight for better results
+- what I wish I knew about sleep schedules
+"""
+
+    return f"""{retry_warning}SLIDE 1 (Hook) - WRITE A CREATIVE, SCROLL-STOPPING HOOK:
+
+This is a {format_identity} carousel about "{topic}" for {niche}.
+
+HOOK REQUIREMENTS:
+- MUST be ≤{max_words} words, all lowercase
+- MUST be grammatically natural for the topic "{topic}"
+- Create a curiosity gap (promise insight without revealing it)
+- Feel actionable (clear benefit or transformation)
+- Be specific (numbers, details, concrete language)
+- Include a pattern interrupt (unexpected angle, contrarian take)
+- NO quotes, no meta-text
+{examples_section}
+Generate an ORIGINAL hook that fits "{topic}" naturally.
+Write the complete hook (≤{max_words} words, all lowercase):"""
 
 
 def build_system_prompt(brand_identity: Dict, content_templates: Optional[Dict] = None) -> str:
@@ -44,7 +111,9 @@ def build_habit_list_prompt(
     max_words: int,
     score_feedback: Optional[Dict] = None,
     niche: str = "general content",
-    content_templates: Optional[Dict] = None
+    content_templates: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
 ) -> str:
     """Build prompt for habit_list format"""
 
@@ -62,35 +131,18 @@ def build_habit_list_prompt(
 
     conv_elements_str = '", "'.join(conversational_elements[:4])
 
-    # Build hook instruction based on strategy
+    # Build hook instruction
     if hook_strategy == "viral":
-        retry_warning = ""
-        if score_feedback:
-            retry_warning = f"""⚠️  PREVIOUS HOOK FAILED (scored {score_feedback['total']}/20, need {score_feedback.get('min_score', 16)}+)
-Fix these issues:
-"""
-            for issue in score_feedback.get("feedback", []):
-                retry_warning += f"- {issue}\n"
-            retry_warning += "\n"
-
-        hook_instruction = f"""{retry_warning}SLIDE 1 (Hook) - FILL IN THE TEMPLATE:
-
-Use this exact template:
-"why your [BLANK 1] keeps failing (the {num_items} things no one talks about)"
-
-BLANK 1 instructions:
-- Fill with specific aspect of "{topic}"
-- Make it specific to {niche} situations
-- NOT generic
-
-Now fill BLANK 1 for "{topic}":
-Write the complete hook (≤{max_words} words, all lowercase):"""
+        hook_instruction = _build_dynamic_hook_instruction(
+            topic=topic, format_identity="underrated tips/habits list",
+            max_words=max_words, num_items=num_items, niche=niche,
+            score_feedback=score_feedback, hook_examples=hook_examples,
+            hook_formulas=hook_formulas,
+        )
     else:
-        # Template hook
         hook_instruction = f"""SLIDE 1 (Hook):
-Write: {num_items} boring {topic} habits that changed everything
-- Use "boring" or similar downplaying words
-- Promise transformation
+Write a compelling hook about "{topic}" (≤{max_words} words, all lowercase)
+- Promise transformation or reveal
 - NO quotes or meta-text"""
 
     return f"""Generate a TikTok carousel about "{topic}" for {niche}.
@@ -140,7 +192,9 @@ def build_step_guide_prompt(
     max_words: int,
     score_feedback: Optional[Dict] = None,
     niche: str = "general content",
-    content_templates: Optional[Dict] = None
+    content_templates: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
 ) -> str:
     """Build prompt for step_guide format"""
 
@@ -160,30 +214,15 @@ def build_step_guide_prompt(
 
     # Build hook instruction
     if hook_strategy == "viral":
-        hook_instruction = f"""SLIDE 1 (Hook) - VIRAL PATTERN:
-Choose ONE proven viral hook pattern for "{topic}":
-
-1. "the [topic] order that actually works (most people do this backward)"
-2. "why your [topic] keeps failing (the missing step no one talks about)"
-3. "how to [goal] by doing less (it's the opposite of what you'd think)"
-4. "building a [topic] that works takes [X days]. here's what actually happens"
-
-REQUIREMENTS:
-- MUST be ≤{max_words} words
-- MUST use lowercase
-- MUST include pattern interrupt (backward, opposite, no one talks about)
-- MUST create curiosity gap
-- MUST be specific (use numbers/times)
-- NO quotes or meta-text"""
-
-        if score_feedback:
-            hook_instruction += f"\n\nPREVIOUS ATTEMPT FEEDBACK:\n"
-            for issue in score_feedback.get("feedback", []):
-                hook_instruction += f"- {issue}\n"
+        hook_instruction = _build_dynamic_hook_instruction(
+            topic=topic, format_identity="sequential step-by-step action guide",
+            max_words=max_words, num_items=num_items, niche=niche,
+            score_feedback=score_feedback, hook_examples=hook_examples,
+            hook_formulas=hook_formulas,
+        )
     else:
-        # Template hook
         hook_instruction = f"""SLIDE 1 (Hook):
-Write: how to build a {topic} that actually works
+Write a compelling hook about "{topic}" (≤{max_words} words, all lowercase)
 - NO quotes or meta-text"""
 
     return f"""Generate a TikTok carousel about "{topic}" for {niche}.
@@ -222,3 +261,192 @@ BAD (too clinical): "{bad_example}"
 GOOD (conversational): "{good_example}"
 
 Generate {num_items} steps for "{topic}"."""
+
+
+def build_scripts_prompt(
+    topic: str,
+    num_categories: int = 4,
+    max_words: int = 20,
+    niche: str = "general content",
+    score_feedback: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
+    content_templates: Optional[Dict] = None,
+) -> str:
+    """
+    Build prompt for 'Scripts That Work' format
+    PROVEN PERFORMANCE: 2,746 views average, 21+ saves
+    """
+    hook_instruction = _build_dynamic_hook_instruction(
+        topic=topic, format_identity="exact-phrases-to-use 'scripts that work' carousel",
+        max_words=max_words, num_items=num_categories, niche=niche,
+        score_feedback=score_feedback, hook_examples=hook_examples,
+        hook_formulas=hook_formulas,
+    )
+
+    return f"""Generate a "Scripts That Work" carousel for {topic}.
+
+This format provides exact phrases parents can say immediately - copy-paste solutions they can screenshot and use tonight.
+
+PROVEN PERFORMANCE: 2,746 views average, 21+ saves
+
+FORMAT: {num_categories} script categories + final CTA slide
+
+{hook_instruction}
+
+SLIDES 2-{num_categories + 1} (Script Categories):
+CRITICAL: Each category MUST start with "script 1:", "script 2:", etc. This is REQUIRED.
+
+Format for each category:
+script 1: when they're [situation]
+
+• [exact phrase to say - ≤8 words]
+• [exact phrase to say - ≤8 words]
+• [exact phrase to say - ≤8 words]
+
+EXAMPLE:
+script 1: when they're upset
+
+• I see you're feeling big feelings
+• your feelings are okay
+• let's breathe together
+
+SLIDE {num_categories + 2} (CTA):
+save this for tonight 💙
+
+STYLE RULES:
+- REQUIRED: Start each category with "script 1:", "script 2:", etc
+- All lowercase
+- Each script phrase ≤8 words
+- 3-4 exact phrases per category
+- Warm, empathetic but direct tone
+- Focus on what TO say (not what NOT to say)
+- Make scripts feel natural, not clinical
+- Cover {num_categories} different scenarios
+
+Target audience: Exhausted parents who need immediate solutions
+
+Generate {num_categories} script categories for "{topic}"."""
+
+
+def build_boring_habits_prompt(
+    topic: str,
+    num_habits: int = 5,
+    max_words: int = 20,
+    niche: str = "general content",
+    score_feedback: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
+    content_templates: Optional[Dict] = None,
+) -> str:
+    """
+    Build prompt for 'X Boring Habits That Changed Everything' format
+    PROVEN PERFORMANCE: 1,386 views average
+    """
+    hook_instruction = _build_dynamic_hook_instruction(
+        topic=topic, format_identity="simple unglamorous habits with outsized impact",
+        max_words=max_words, num_items=num_habits, niche=niche,
+        score_feedback=score_feedback, hook_examples=hook_examples,
+        hook_formulas=hook_formulas,
+    )
+
+    return f"""Generate a "Boring Habits That Changed Everything" carousel for {topic}.
+
+This format focuses on simple, unglamorous habits that have outsized impact - NOT flashy tips.
+
+PROVEN PERFORMANCE: 1,386 views average
+
+FORMAT: {num_habits} habits + final CTA slide
+
+{hook_instruction}
+
+SLIDES 2-{num_habits + 1} (Habits):
+CRITICAL: Each habit MUST start with "habit 1:", "habit 2:", etc. This is REQUIRED.
+
+Format for each habit:
+habit 1: [boring habit - 3-6 words]
+([scientific reason in parentheses])
+
+[1-2 sentences explaining why this boring thing actually works. Keep it conversational and brief.]
+
+EXAMPLE:
+habit 1: same wake time daily
+(even on weekends)
+
+yes I know it sounds too simple. but circadian rhythm needs consistency. their nervous system learns to predict the day. cortisol regulation improves. honestly it's the most boring advice that actually works.
+
+SLIDE {num_habits + 2} (CTA):
+try one tonight 💙
+
+STYLE RULES:
+- REQUIRED: Start each habit with "habit 1:", "habit 2:", etc
+- All lowercase (except "I")
+- Conversational, honest tone ("I know this sounds...", "honestly", "yes really")
+- Each habit header ≤6 words
+- Focus on boring/obvious things parents skip
+- Make it feel doable
+
+Generate {num_habits} boring habits about "{topic}"."""
+
+
+def build_how_to_prompt(
+    outcome: str,
+    num_steps: int = 5,
+    max_words: int = 20,
+    niche: str = "general content",
+    score_feedback: Optional[Dict] = None,
+    hook_examples: Optional[Dict] = None,
+    hook_formulas: Optional[List[str]] = None,
+    content_templates: Optional[Dict] = None,
+) -> str:
+    """
+    Build prompt for 'How to [Outcome]' format
+    PROVEN PERFORMANCE: 2,049 views average
+    """
+    hook_instruction = _build_dynamic_hook_instruction(
+        topic=outcome, format_identity="how-to guide providing a clear roadmap to a specific outcome",
+        max_words=max_words, num_items=num_steps, niche=niche,
+        score_feedback=score_feedback, hook_examples=hook_examples,
+        hook_formulas=hook_formulas,
+    )
+
+    return f"""Generate a "How to" step-by-step carousel about {outcome}.
+
+This format delivers a clear roadmap to achieve a specific outcome parents want.
+
+PROVEN PERFORMANCE: 2,049 views average
+
+FORMAT: {num_steps} sequential steps + final CTA slide
+
+{hook_instruction}
+
+SLIDES 2-{num_steps + 1} (Steps):
+CRITICAL: Each step MUST start with "step 1:", "step 2:", etc. This is REQUIRED.
+
+Format for each step:
+step 1: [action phrase - 3-6 words]
+(brief scientific reason in parentheses)
+
+[1-2 sentences explaining why this step works. Keep it clear and confident.]
+
+EXAMPLE:
+step 1: start bedtime at same time
+(every single night)
+
+consistency cues circadian rhythm. their body learns when sleep is coming. melatonin production syncs up. yes it means weekends too but it works.
+
+SLIDE {num_steps + 2} (CTA):
+save for later 💙
+
+STYLE RULES:
+- REQUIRED: Start each step with "step 1:", "step 2:", etc
+- All lowercase (except "I")
+- Each step header ≤6 words
+- Steps must be sequential (order matters)
+- Include brief "why" in parentheses
+- Clear, confident, actionable tone
+- Avoid negative framing
+
+Target outcome: {outcome}
+
+Generate {num_steps} sequential steps for "{outcome}"."""

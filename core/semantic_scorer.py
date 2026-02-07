@@ -64,13 +64,14 @@ class SemanticHookScorer:
         ]
     }
 
-    def __init__(self, api_key: str = None, use_openrouter: bool = True):
+    def __init__(self, api_key: str = None, use_openrouter: bool = True, custom_references: Dict = None):
         """
         Initialize with OpenAI API or OpenRouter
 
         Args:
             api_key: API key (defaults to env vars)
             use_openrouter: If True, use OpenRouter; else use OpenAI directly
+            custom_references: Optional niche-specific reference examples to merge with defaults
         """
         if use_openrouter:
             self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
@@ -83,6 +84,15 @@ class SemanticHookScorer:
 
         if not self.api_key:
             raise ValueError("No API key found. Set OPENROUTER_API_KEY or OPENAI_API_KEY")
+
+        # Merge custom niche-specific references with defaults
+        self.reference_examples = {k: list(v) for k, v in self.REFERENCE_EXAMPLES.items()}
+        if custom_references:
+            for dimension, examples in custom_references.items():
+                if dimension in self.reference_examples and isinstance(examples, list):
+                    self.reference_examples[dimension] = (
+                        self.reference_examples[dimension] + examples
+                    )
 
     @lru_cache(maxsize=1000)
     def _get_embedding(self, text: str) -> np.ndarray:
@@ -135,11 +145,11 @@ class SemanticHookScorer:
         Returns:
             Score from 0-5 based on semantic similarity to reference examples
         """
-        if dimension not in self.REFERENCE_EXAMPLES:
+        if dimension not in self.reference_examples:
             return 2  # Default
 
         hook_emb = self._get_embedding(hook.lower())
-        reference_examples = self.REFERENCE_EXAMPLES[dimension]
+        reference_examples = self.reference_examples[dimension]
 
         # Get max similarity to any reference example
         max_similarity = 0.0
@@ -188,7 +198,7 @@ class SemanticHookScorer:
             if score < 3:
                 dim_name = dimension.replace('_', ' ').title()
                 # Provide example instead of exact keywords
-                examples = self.REFERENCE_EXAMPLES[dimension][:2]
+                examples = self.reference_examples[dimension][:2]
                 feedback.append(
                     f"{dim_name} could be stronger (scored {score}/5). "
                     f"Examples: '{examples[0]}' or '{examples[1]}'"

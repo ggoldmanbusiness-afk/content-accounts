@@ -105,8 +105,9 @@ def validate_args(args) -> list[str]:
         errors.append(f"Slide count must be 5-10 (got {args.slides})")
 
     # Validate format (if specified)
-    if args.format is not None and args.format not in ['habit_list', 'step_guide']:
-        errors.append(f"Format must be 'habit_list' or 'step_guide' (got {args.format})")
+    valid_formats = ['habit_list', 'step_guide', 'scripts', 'boring_habits', 'how_to']
+    if args.format is not None and args.format not in valid_formats:
+        errors.append(f"Format must be one of {valid_formats} (got {args.format})")
 
     # Validate count
     if args.count < 1:
@@ -151,7 +152,7 @@ Examples:
     parser.add_argument(
         '--format',
         type=str,
-        choices=['habit_list', 'step_guide'],
+        choices=['habit_list', 'step_guide', 'scripts', 'boring_habits', 'how_to'],
         default=None,
         help='Content format (auto-selected if not specified)'
     )
