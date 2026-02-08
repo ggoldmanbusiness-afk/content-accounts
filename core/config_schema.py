@@ -20,7 +20,8 @@ class HashtagStrategy(BaseModel):
     """Hashtag usage configuration"""
     primary: List[str] = Field(..., min_length=1, description="Always-used hashtags")
     secondary: List[str] = Field(default_factory=list, description="Rotating hashtags")
-    max_per_post: int = Field(default=4, ge=1, le=30, description="Max hashtags per post")
+    topic_hashtags: Dict[str, List[str]] = Field(default_factory=dict, description="Topic-specific hashtag pools")
+    max_per_post: int = Field(default=5, ge=1, le=30, description="Max hashtags per post")
     style: str = Field(default="simple_hashtags_only", description="Hashtag style")
 
 
@@ -44,7 +45,7 @@ class CarouselStrategy(BaseModel):
     content_type: str = Field(..., description="Primary content type")
     slide_count_range: tuple[int, int] = Field(default=(5, 10), description="Slide count range")
     default_slide_count: int = Field(default=5, ge=5, le=10, description="Default slides")
-    format: str = Field(default="checklist_framework", description="Content format")
+    format: str = Field(default="habit_list", description="Content format")
     cta_focus: str = Field(default="save_this", description="CTA type")
     caption_style: str = Field(default="hashtags_only", description="Caption style")
 

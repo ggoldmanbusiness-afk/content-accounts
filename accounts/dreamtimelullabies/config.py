@@ -12,7 +12,7 @@ DISPLAY_NAME = "Dreamtime Lullabies"
 
 # Brand Voice
 BRAND_IDENTITY = {
-    "character_type": "faceless_expert",
+    "character_type": "lifestyle_guide",
     "personality": "Practical parenting expert sharing actionable tips for babies and young children",
     "value_proposition": "Save-worthy baby and child parenting solutions that actually work",
     "voice_attributes": [
@@ -82,7 +82,7 @@ CONTENT_PILLARS = [
 
 # Quality Thresholds
 QUALITY_OVERRIDES = {
-    "min_hook_score": 8,  # Lowered from 12 for semantic scoring (40%)
+    "min_hook_score": 12,  # Recalibrated: thresholds lowered so 12 is achievable
     "max_words_per_slide": 20,
     "optimize_for_saves": True,
     "allow_sensitive_words": False
@@ -92,20 +92,24 @@ QUALITY_OVERRIDES = {
 HASHTAG_STRATEGY = {
     "primary": ["newmom", "momlife", "parentingtips", "babytips"],
     "secondary": [
-        # Sleep
         "babysleep", "sleeptips", "sleeptraining",
-        # Development
         "babymilestonnes", "toddlerlife", "childdevelopment",
-        # Feeding
         "babyledweaning", "toddlermeals", "pickyeater",
-        # Behavior
         "gentleparenting", "toddlertantrums", "positiveparenting",
-        # Activities
         "toddleractivities", "sensoryplay", "playideas",
-        # General
         "momhacks", "firsttimemom", "babyhacks", "toddlermom"
     ],
-    "max_per_post": 4,
+    "topic_hashtags": {
+        "sleep": ["babysleep", "sleeptips", "sleeptraining"],
+        "development": ["babymilestonnes", "toddlerlife", "childdevelopment"],
+        "feeding": ["babyledweaning", "toddlermeals", "pickyeater"],
+        "behavior": ["gentleparenting", "toddlertantrums", "positiveparenting"],
+        "activities": ["toddleractivities", "sensoryplay", "playideas"],
+        "safety": ["babyhacks", "momhacks", "babyproofing"],
+        "gear": ["babyhacks", "firsttimemom", "babyregistry"],
+        "general": ["momhacks", "firsttimemom", "babyhacks", "toddlermom"]
+    },
+    "max_per_post": 5,
     "style": "simple_hashtags_only"
 }
 
@@ -139,7 +143,7 @@ CAROUSEL_STRATEGY = {
     "content_type": "save_worthy_tips",
     "slide_count_range": (5, 10),  # 5-10 slides per carousel
     "default_slide_count": 5,
-    "format": "checklist_framework",  # Default format (override via CLI --format flag)
+    "format": "habit_list",  # Default format (override via CLI --format flag)
     "cta_focus": "save_this",
     "caption_style": "hashtags_only"
 }

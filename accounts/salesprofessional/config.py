@@ -84,7 +84,7 @@ CONTENT_PILLARS = [
 
 # Quality Thresholds
 QUALITY_OVERRIDES = {
-    "min_hook_score": 8,  # Lowered from 14 for semantic scoring (40%)
+    "min_hook_score": 12,  # Recalibrated: thresholds lowered so 12 is achievable
     "max_words_per_slide": 18,
     "optimize_for_saves": True,
     "allow_sensitive_words": False

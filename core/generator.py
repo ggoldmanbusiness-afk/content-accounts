@@ -146,15 +146,25 @@ class BaseContentGenerator:
             content_format = self.config.carousel_strategy.format or determine_content_format(topic)
             logger.info(f"📋 Auto-selected format: {content_format} (based on topic/config)")
 
-        # Validate format - support both legacy and new proven formats
-        valid_formats = ["habit_list", "step_guide", "scripts", "boring_habits", "how_to"]
+        # Validate format - built-in + any cloned formats from content_templates.json
+        builtin_formats = ["habit_list", "step_guide", "scripts", "boring_habits", "how_to"]
+        cloned_formats = []
+        if self.content_templates and "formats" in self.content_templates:
+            for fmt_name, fmt_cfg in self.content_templates["formats"].items():
+                if fmt_cfg.get("is_cloned_format") and fmt_name not in builtin_formats:
+                    cloned_formats.append(fmt_name)
+        valid_formats = builtin_formats + cloned_formats
         if content_format not in valid_formats:
             raise ValueError(f"Invalid format: {content_format}. Valid options: {valid_formats}")
 
-        if not (5 <= num_items <= 10):
+        # Cloned formats use their own slide count from config
+        if content_format in cloned_formats:
+            fmt_cfg = self.content_templates["formats"][content_format]
+            num_items = fmt_cfg.get("default_slide_count", num_items)
+        elif not (5 <= num_items <= 10):
             raise ValueError(f"Invalid slide count: {num_items}. Must be 5-10.")
 
-        # Cap all formats at 5 items to keep carousels concise
+        # Cap built-in formats at 5 items to keep carousels concise
         formats_to_cap = ["boring_habits", "habit_list", "step_guide", "scripts", "how_to"]
         if content_format in formats_to_cap and num_items > 5:
             logger.info(f"⚠️  Capping {content_format} from {num_items} to 5 items (max length)")
@@ -187,9 +197,10 @@ class BaseContentGenerator:
             content=content
         )
 
-        # 3. Generate images (Pexels for proven formats, Gemini for legacy)
+        # 3. Generate images (Pexels for proven formats, Gemini for legacy + cloned)
         pexels_formats = ["scripts", "boring_habits", "how_to"]
-        use_pexels = content_format in pexels_formats
+        is_cloned = content_format in cloned_formats
+        use_pexels = content_format in pexels_formats and not is_cloned
         num_slides = len(content["slides"])
 
         if use_pexels:
@@ -215,7 +226,21 @@ class BaseContentGenerator:
                 images.append(img)
 
         else:
-            # Legacy Gemini generation for existing formats
+            # Gemini generation for existing + cloned formats
+            # For cloned formats, use per-slide image prompts from template config
+            if is_cloned:
+                fmt_cfg = self.content_templates["formats"][content_format]
+                template_image_prompts = fmt_cfg.get("image_prompts", [])
+                if template_image_prompts:
+                    image_prompts = []
+                    for ip in template_image_prompts:
+                        tmpl = ip.get("template", "")
+                        image_prompts.append(tmpl.replace("{topic}", topic))
+                    # Pad or trim to match slide count
+                    while len(image_prompts) < num_slides:
+                        image_prompts.append(f"Scene related to {topic}, clean composition")
+                    image_prompts = image_prompts[:num_slides]
+
             logger.info("Generating images with Gemini (9:16 aspect ratio)...")
             images = []
             reference_image_bytes = None
@@ -278,7 +303,13 @@ class BaseContentGenerator:
             logger.info(f"Saved: {slide_path.name}")
 
         # 6. Generate and save caption
-        caption = self._generate_caption(content)
+        # For cloned formats, use the caption from the format's LLM response (has correct CTA strategy)
+        if is_cloned and content.get("caption"):
+            caption_text = content["caption"]
+            hashtags = self._build_topic_hashtags(topic)
+            caption = f"{caption_text}\n\n{hashtags}"
+        else:
+            caption = self._generate_caption(content)
         caption_path = output_dir / "caption.txt"
         caption_path.write_text(caption)
 
@@ -408,6 +439,18 @@ class BaseContentGenerator:
                     hook_examples=hook_examples, hook_formulas=hook_formulas,
                     content_templates=self.content_templates,
                 )
+            elif self.content_templates and content_format in self.content_templates.get("formats", {}):
+                # Blueprint-derived (cloned) format
+                fmt_cfg = self.content_templates["formats"][content_format]
+                if fmt_cfg.get("is_cloned_format"):
+                    prompt = prompts.build_blueprint_format_prompt(
+                        topic=topic,
+                        format_config=fmt_cfg,
+                        brand_voice=niche,
+                        niche=niche,
+                    )
+                else:
+                    raise ValueError(f"Unsupported format: {content_format}")
             else:
                 raise ValueError(f"Unsupported format: {content_format}")
 
@@ -476,8 +519,14 @@ class BaseContentGenerator:
         Returns:
             Dict with 'slides' array and optional 'caption', 'pexels_query' fields
         """
-        # Try JSON format first (for new proven formats)
-        if content_format in ["scripts", "boring_habits", "how_to"]:
+        # Try JSON format first (for proven formats + cloned formats)
+        # Check if this is a cloned format
+        is_cloned_fmt = False
+        if self.content_templates and "formats" in self.content_templates:
+            fmt = self.content_templates["formats"].get(content_format, {})
+            is_cloned_fmt = fmt.get("is_cloned_format", False)
+
+        if content_format in ["scripts", "boring_habits", "how_to"] or is_cloned_fmt:
             try:
                 # Extract JSON from response (may have wrapper text)
                 json_match = re.search(r'\{.*\}', content_text, re.DOTALL)
@@ -489,11 +538,20 @@ class BaseContentGenerator:
                     for slide_data in data.get("slides", []):
                         slides.append({"text": slide_data["text"]})
 
-                    return {
-                        "slides": slides,
-                        "caption": data.get("caption"),
-                        "pexels_query": data.get("pexels_query")
-                    }
+                    # Validate content isn't placeholder text
+                    placeholder_patterns = ["explanation here", "[hook text]", "[phrase]", "[situation]", "[action phrase]"]
+                    has_placeholder = any(
+                        any(p in slide.get("text", "").lower() for p in placeholder_patterns)
+                        for slide in slides
+                    )
+                    if has_placeholder:
+                        logger.warning(f"Detected placeholder text in {content_format} JSON response, falling back to text parsing")
+                    else:
+                        return {
+                            "slides": slides,
+                            "caption": data.get("caption"),
+                            "pexels_query": data.get("pexels_query")
+                        }
                 else:
                     logger.warning(f"No JSON found in response for {content_format} format, falling back to text parsing")
             except json.JSONDecodeError as e:
@@ -541,7 +599,26 @@ class BaseContentGenerator:
         slides.append({"text": hook_text})
 
         # Extract tips/steps
-        # Parse based on "tip N:" or "step N:" patterns (no emojis)
+        # Parse based on "tip N:" or "step N:" or dynamic "label:" patterns
+        _CTA_MARKERS = ['save this', 'save for later', 'send this', 'try one tonight',
+                        'which one are you', 'comment which', 'drop it below', 'come back to it']
+
+        def _is_cta(text: str) -> bool:
+            """Check if a line is a CTA slide"""
+            t = text.lower()
+            return any(m in t for m in _CTA_MARKERS)
+
+        def _is_category_start(text: str) -> bool:
+            """Check if a line starts a new tip/step/habit/script/category"""
+            t = text.lower()
+            if t.startswith(('tip ', 'step ', 'habit ', 'script ')):
+                return True
+            if ':' in text:
+                before = text.split(':')[0].strip()
+                if 0 < len(before.split()) <= 3 and len(before) <= 30:
+                    return True
+            return False
+
         current_tip = None
         tip_count = 0
 
@@ -560,17 +637,11 @@ class BaseContentGenerator:
             if line == hook_text:  # Skip the hook we already added
                 skip_until_idx = i + 1
                 continue
-            if 'save this' in line.lower():  # Stop at CTA
+            if _is_cta(line):  # Stop at CTA
                 break
 
-            # Detect if this line starts a tip/step/habit/script
-            # Look for "tip N:", "step N:", "habit N:", "script N:" patterns
-            is_tip_start = (
-                line.lower().startswith('tip ') or
-                line.lower().startswith('step ') or
-                line.lower().startswith('habit ') or
-                line.lower().startswith('script ')
-            )
+            # Detect if this line starts a tip/step/habit/script/category
+            is_tip_start = _is_category_start(line)
 
             if not is_tip_start:
                 continue  # Skip lines that don't start tips
@@ -594,8 +665,8 @@ class BaseContentGenerator:
                         peek_line = lines[k].strip()
                         # Check if peeked line starts a new tip
                         peek_is_tip = (
-                            peek_line.lower().startswith(('tip ', 'step ', 'habit ', 'script ')) or
-                            'save this' in peek_line.lower()
+                            _is_category_start(peek_line) or
+                            _is_cta(peek_line)
                         )
                         if peek_is_tip:
                             # Next real content is a new tip, stop here
@@ -606,7 +677,7 @@ class BaseContentGenerator:
                     continue
 
                 # Stop at CTA
-                if 'save this' in continuation_line.lower():
+                if _is_cta(continuation_line):
                     break
 
                 # Stop at meta-text
@@ -614,7 +685,7 @@ class BaseContentGenerator:
                     break
 
                 # Check if this line itself starts a new tip
-                if continuation_line.lower().startswith(('tip ', 'step ', 'habit ', 'script ')):
+                if _is_category_start(continuation_line):
                     # This line starts next tip, stop before it
                     break
 
@@ -639,7 +710,7 @@ class BaseContentGenerator:
         # Look for CTA slide
         cta_found = False
         for line in lines:
-            if 'save this' in line.lower() or 'come back to it' in line.lower():
+            if _is_cta(line):
                 cta_text = self._clean_text(line)
                 if cta_text:
                     slides.append({"text": cta_text})
@@ -653,7 +724,8 @@ class BaseContentGenerator:
             if len(slides) < target_slides - 1:
                 slides.append({"text": f"tip {len(slides)}\n\nexplanation here"})
             else:
-                slides.append({"text": "save this so you can come back to it when you need it"})
+                from core.prompts import _random_cta
+                slides.append({"text": _random_cta()})
 
         return {
             "slides": slides[:target_slides],
@@ -758,8 +830,14 @@ class BaseContentGenerator:
         """Generate contextual image prompts using Claude"""
         prompts = []
 
-        # Randomly choose aesthetic style (50/50 mix of painterly vs iPhone photo)
-        style = random.choice(["painterly", "iphone_photo"])
+        # Choose aesthetic style (use override if set, otherwise default to iphone_photo_v2)
+        available_styles = list(self.scenes.get("aesthetic_styles", {}).keys())
+        if hasattr(self, '_style_override') and self._style_override:
+            style = self._style_override
+        elif "iphone_photo_v2" in available_styles:
+            style = random.choice(["iphone_photo_v2", "painterly_v2"])
+        else:
+            style = random.choice(["painterly", "iphone_photo"])
         base_aesthetic = self.scenes["aesthetic_styles"][style]
         logger.info(f"🎨 Using {style} aesthetic style")
 
@@ -821,8 +899,8 @@ Generate a scene description that creates visual drama and matches this specific
             logger.error(f"Failed to generate hook scene prompt: {e}")
             logger.info("Falling back to brand anchor")
             # Fallback to brand_anchor
-            style = "painterly" if "painterly" in base_aesthetic.lower() else "iphone_photo"
-            return self.scenes["brand_anchor"][style]
+            anchor_style = "painterly" if "painterly" in base_aesthetic.lower() else "iphone_photo"
+            return self.scenes["brand_anchor"][anchor_style]
 
     def _generate_contextual_prompts(
         self,
@@ -867,6 +945,7 @@ REQUIREMENTS:
 {character_section}
 - Keep scenes authentic, realistic, and on-brand
 - Focus on the SPECIFIC action/concept in each slide
+- The LAST slide is a CTA (save/share/comment) - make it a warm closing scene related to "{topic}" (e.g., parent looking at phone, cozy moment with child, or a flat lay of items from the topic). Do NOT default to a sleeping baby unless the topic is about sleep.
 
 CRITICAL - VISUAL CONSISTENCY:
 All scenes must maintain CONSISTENT visual style:
@@ -875,6 +954,12 @@ All scenes must maintain CONSISTENT visual style:
 - Same color palette and saturation
 - Same artistic approach
 - Same mood and atmosphere
+
+CRITICAL - COMPOSITION RULES:
+- ONE clear scene per image with a single focal point
+- Only ONE baby/child per scene (never show two different babies)
+- NO collages, split screens, or composite images
+- Keep scenes simple and realistic — do not combine objects from different rooms
 
 BASE AESTHETIC (always include at end):
 {base_aesthetic}
@@ -1042,7 +1127,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
             if is_hook:
                 font = ImageFont.truetype(font_path, 76)
             else:
-                font_title = ImageFont.truetype(font_path, 58)
+                font_title = ImageFont.truetype(font_path, 72)
                 font_body = ImageFont.truetype(font_path, 40)
         except Exception as e:
             logger.warning(f"Could not load font: {e}, using default")
@@ -1080,9 +1165,14 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                 if current_line:
                     lines.append(" ".join(current_line))
 
-                # Calculate total height and center vertically
+                # Calculate total height and center vertically within safe zones
+                # TikTok safe zones: top 150px, bottom 320px, right 120px
+                safe_top = 150
+                safe_bottom = img_height - 320
                 total_height = len(lines) * line_height
                 start_y = (img_height - total_height) // 2
+                # Clamp within safe zones
+                start_y = max(safe_top, min(start_y, safe_bottom - total_height))
 
                 # Draw centered lines with stroke
                 y = start_y
@@ -1104,7 +1194,8 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                 body = '\n'.join(lines[1:]) if len(lines) > 1 else ""
 
                 padding_x = 70
-                max_width = img_width - (padding_x * 2)
+                padding_right = 120  # TikTok safe zone for like/comment/share buttons
+                max_width = img_width - padding_x - padding_right
 
                 draw = ImageDraw.Draw(img)
 
@@ -1133,7 +1224,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                         title_lines.append(" ".join(current_line))
 
                 # Calculate heights
-                title_line_height = 85
+                title_line_height = 100
                 title_height = len(title_lines) * title_line_height if title_lines else 0
                 title_spacing = 40
 
@@ -1167,10 +1258,12 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                 # Total content height
                 total_height = title_height + title_spacing + body_height
 
-                # Center vertically (with minimum safe Y for emoji)
+                # Center vertically within TikTok safe zones
+                # Top: 180px (emoji safe), Bottom: 320px from bottom
+                safe_top = 180
+                safe_bottom = img_height - 320
                 centered_y = (img_height - total_height) // 2
-                minimum_safe_y = 180
-                y = max(minimum_safe_y, centered_y)
+                y = max(safe_top, min(centered_y, safe_bottom - total_height))
 
                 x = padding_x
 
@@ -1178,7 +1271,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                 for title_line in title_lines:
                     self._draw_text_with_stroke(
                         pilmoji, (x + edge_padding, y + edge_padding), title_line, font_title,
-                        stroke_width=2
+                        stroke_width=8
                     )
                     y += title_line_height
 
@@ -1241,8 +1334,11 @@ Generate {len(slides_text)} contextual scene descriptions:"""
 
             tips_context = "\n".join(tips_summary[:3])
 
-            # Generate contextual caption
-            prompt = f"""Generate a short, engaging Instagram/TikTok caption for this parenting carousel.
+            # Get topic for keyword-rich caption
+            topic = content.get("topic", "parenting tips")
+
+            # Generate contextual caption (200-400 chars for TikTok SEO)
+            prompt = f"""Generate a TikTok caption for this parenting carousel about "{topic}".
 
 CAROUSEL HOOK:
 {hook}
@@ -1251,30 +1347,28 @@ TIPS INCLUDED:
 {tips_context}
 
 REQUIREMENTS:
-- 1-2 sentences max (under 20 words total)
-- Casual, relatable tone
-- Create curiosity or ask engaging question
+- 200-400 characters total (this is CRITICAL for TikTok search discovery)
+- Format: [Hook sentence that creates curiosity] + [1-2 sentences of context with keywords related to "{topic}"] + [CTA question to drive comments]
+- Casual, relatable tone - like texting a mom friend
+- Include topic-relevant keywords naturally (TikTok search reads captions)
 - NO hashtags (those come separately)
 - NO emojis
 - Lowercase style preferred
 
 EXAMPLES:
-- "these feel too simple but they're science-backed. which one surprised you?"
-- "try #3 tonight and report back"
-- "the last one is controversial but it works"
+- "the frozen washcloth trick sounds too simple but it changed everything for us during teething. most parents don't realize timing matters more than the method itself. which tip are you trying tonight?"
+- "I spent $3000 on baby gear before learning what actually matters. turns out the expensive stuff sits unused while the cheap basics save your sanity every single day. which one surprised you most?"
 
 Generate caption:"""
 
             caption_text = self.llm.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
-                max_tokens=50
+                max_tokens=150
             ).strip('"\'')
 
-            # Add hashtags
-            max_tags = self.config.hashtag_strategy.max_per_post
-            primary_tags = self.config.hashtag_strategy.primary[:max_tags]
-            hashtags = " ".join([f"#{tag}" for tag in primary_tags])
+            # Build topic-aware hashtags
+            hashtags = self._build_topic_hashtags(topic)
             return f"{caption_text}\n\n{hashtags}"
 
         except Exception as e:
@@ -1283,10 +1377,47 @@ Generate caption:"""
 
     def _generate_caption_fallback(self) -> str:
         """Fallback caption if generation fails"""
-        max_tags = self.config.hashtag_strategy.max_per_post
-        primary_tags = self.config.hashtag_strategy.primary[:max_tags]
-        hashtags = " ".join([f"#{tag}" for tag in primary_tags])
+        hashtags = self._build_topic_hashtags("general")
         return f"save-worthy tips that actually work\n\n{hashtags}"
+
+    def _build_topic_hashtags(self, topic: str) -> str:
+        """Build topic-aware hashtag string: 2 broad + 2-3 topic-specific"""
+        topic_lower = topic.lower()
+
+        # Pick 2 broad primary tags
+        primary_tags = self.config.hashtag_strategy.primary[:2]
+
+        # Match topic to category for specific tags
+        topic_hashtags = getattr(self.config.hashtag_strategy, 'topic_hashtags', None)
+        specific_tags = []
+
+        if topic_hashtags and isinstance(topic_hashtags, dict):
+            # Keyword matching to find best category
+            category_keywords = {
+                "sleep": ["sleep", "nap", "bedtime", "wake", "night", "rest"],
+                "development": ["development", "milestone", "cognitive", "language", "motor", "growth"],
+                "feeding": ["feed", "eating", "meal", "food", "solid", "breastfeed", "bottle", "picky"],
+                "behavior": ["tantrum", "discipline", "boundary", "behavior", "emotion", "sibling"],
+                "activities": ["play", "activity", "sensory", "outdoor", "game", "craft"],
+                "safety": ["safety", "babyproof", "choking", "hazard", "car seat", "first aid"],
+                "gear": ["gear", "product", "registry", "must-have", "essential", "budget"],
+            }
+
+            matched_category = "general"
+            for category, keywords in category_keywords.items():
+                if any(kw in topic_lower for kw in keywords):
+                    matched_category = category
+                    break
+
+            specific_tags = topic_hashtags.get(matched_category, topic_hashtags.get("general", []))
+
+        # Combine: 2 broad + up to 3 specific (no duplicates)
+        all_tags = list(primary_tags)
+        for tag in specific_tags:
+            if tag not in all_tags and len(all_tags) < 5:
+                all_tags.append(tag)
+
+        return " ".join([f"#{tag}" for tag in all_tags])
 
     def _generate_random_topic(self) -> str:
         """Generate random topic from content pillars"""

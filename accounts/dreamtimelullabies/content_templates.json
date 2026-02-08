@@ -20,20 +20,98 @@
     "habit_list": {
       "description": "List of actionable tips/habits (hook + tips + CTA)",
       "structure": [
-        {"type": "hook", "position": 1, "max_words": 20},
-        {"type": "tip", "position": "2-N", "max_words": 20},
-        {"type": "cta", "position": "last", "max_words": 15}
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 20
+        },
+        {
+          "type": "tip",
+          "position": "2-N",
+          "max_words": 20
+        },
+        {
+          "type": "cta",
+          "position": "last",
+          "max_words": 15
+        }
       ],
       "prompt_template": "Generate a save-worthy carousel about {topic} for baby sleep.\n\nFormat: habit_list\nSlides: {slide_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{tip_end}: Individual actionable tips (max 20 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Clear, direct, evidence-based, practical\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"tip text\", \"type\": \"tip\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Evidence-based, actionable advice\n- No sensitive/controversial language\n- Hook score: min 12/20\n- Focus on save-worthy content"
     },
     "step_guide": {
       "description": "Numbered step-by-step guide (hook + steps + CTA)",
       "structure": [
-        {"type": "hook", "position": 1, "max_words": 20},
-        {"type": "step", "position": "2-N", "max_words": 20, "numbered": true},
-        {"type": "cta", "position": "last", "max_words": 15}
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 20
+        },
+        {
+          "type": "step",
+          "position": "2-N",
+          "max_words": 20,
+          "numbered": true
+        },
+        {
+          "type": "cta",
+          "position": "last",
+          "max_words": 15
+        }
       ],
       "prompt_template": "Generate a step-by-step guide carousel about {topic} for baby sleep.\n\nFormat: step_guide\nSteps: {step_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{step_end}: Numbered steps (max 20 words each)\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Clear, direct, evidence-based, practical\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"Step 1: action text\", \"type\": \"step\"}},\n    {{\"slide_num\": 3, \"text\": \"Step 2: action text\", \"type\": \"step\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Number each step clearly (Step 1:, Step 2:, etc.)\n- Evidence-based, sequential actions\n- No sensitive/controversial language\n- Hook score: min 12/20\n- Focus on save-worthy content"
+    },
+    "before_after": {
+      "description": "A 3-slide transformation carousel that opens with a self-aware reaction meme, then reveals chronological before-and-after visual proof with minimal text.",
+      "source_blueprint": "tiktok_7602085843410390279",
+      "is_cloned_format": true,
+      "structure": [
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 12,
+          "has_image": true,
+          "has_text_overlay": true
+        },
+        {
+          "type": "before",
+          "position": 2,
+          "max_words": 0,
+          "has_image": true,
+          "has_text_overlay": false
+        },
+        {
+          "type": "after",
+          "position": 3,
+          "max_words": 0,
+          "has_image": true,
+          "has_text_overlay": false
+        }
+      ],
+      "default_slide_count": 3,
+      "image_mode": "gemini",
+      "caption_strategy": "AIDA framework: build curiosity about the transformation, tease learnings, end with soft Parent Playbook plug and link in bio CTA.",
+      "prompt_template": "Create a 3-slide before-and-after transformation carousel about {topic}.\n\nSlide 1 (HOOK): Write a self-aware, meme-style reaction in this exact format: \"me after [seeing/realizing/discovering] [surprising personal observation about transformation over specific time period]\". Maximum 12 words. This should feel relatable and slightly humorous, not boastful. Use lowercase for casual tone.\n\nSlide 2 (BEFORE): No text overlay. This slide will show the \"before\" state visually.\n\nSlide 3 (AFTER): No text overlay. This slide will show the \"after\" state visually, demonstrating clear transformation.\n\nCaption: Write using AIDA framework:\n- Attention: Hook with the transformation result (1 sentence)\n- Interest: Mention the time period, challenge, or what changed (1 sentence)\n- Desire: Tease that you tracked/documented what worked (1 sentence)\n- Action: End with a soft CTA mentioning Parent Playbook and link in bio. Examples: \"save all your parenting wins with Parent Playbook - link in bio\", \"I track everything in Parent Playbook, link in bio if you want it\", \"keeping it all in Parent Playbook so I never forget what worked - link in bio\"\nKeep caption 3-4 sentences maximum. Casual tone, no hard sell.\n\nIMPORTANT RULES:\n- Slide 1 must be exactly the meme reaction format specified\n- Slides 2-3 have ZERO text overlay\n- The transformation should feel authentic, not exaggerated\n- Avoid salesy language; keep it personal and documentary-style\n- NEVER put a literal URL or [link] in the caption — just say \"link in bio\"\n- The Parent Playbook mention should feel natural, like you genuinely use it\n\nReturn JSON:\n{\n  \"slides\": [\n    {\"slide_num\": 1, \"text\": \"<meme reaction text>\", \"type\": \"hook\"},\n    {\"slide_num\": 2, \"text\": \"\", \"type\": \"before\"},\n    {\"slide_num\": 3, \"text\": \"\", \"type\": \"after\"}\n  ],\n  \"caption\": \"<AIDA caption ending with Parent Playbook + link in bio>\",\n  \"topic\": \"{topic}\"\n}",
+      "image_prompts": [
+        {
+          "slide": 1,
+          "template": "Close-up photo of a person with a surprised, wide-eyed expression looking directly at camera. Natural lighting, casual setting, authentic reaction face showing genuine shock or disbelief. The person should appear relatable and approachable. Photorealistic style, warm tones, shallow depth of field focusing on the face."
+        },
+        {
+          "slide": 2,
+          "template": "Authentic before photo showing the initial state related to {topic}. Casual setting with natural lighting, person in comfortable clothing, showing the 'before' condition clearly but not dramatically. Documentary style, unpolished, real-life environment. The photo should feel like a genuine personal snapshot, not staged or professional."
+        },
+        {
+          "slide": 3,
+          "template": "Authentic after photo showing the transformed state related to {topic}. Same casual setting and similar lighting as the before photo to enable direct comparison. Person in similar comfortable clothing and pose, but clearly showing positive transformation. Documentary style, natural and genuine. The improvement should be visible but realistic, not exaggerated or overly polished."
+        }
+      ],
+      "text_overlay_config": {
+        "hook_style": "centered",
+        "content_style": "none",
+        "font_size_hook": 48,
+        "font_size_body": null,
+        "text_position": "top"
+      }
     }
   },
   "hook_examples": {

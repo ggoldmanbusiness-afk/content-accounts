@@ -52,7 +52,7 @@ CAROUSEL_STRATEGY = {{
     "content_type": "save_worthy_tips",
     "slide_count_range": (5, 10),
     "default_slide_count": 5,
-    "format": "checklist_framework",
+    "format": "habit_list",
     "cta_focus": "save_this",
     "caption_style": "hashtags_only"
 }}

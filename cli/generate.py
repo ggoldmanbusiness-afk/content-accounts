@@ -104,10 +104,12 @@ def validate_args(args) -> list[str]:
     if not (5 <= args.slides <= 10):
         errors.append(f"Slide count must be 5-10 (got {args.slides})")
 
-    # Validate format (if specified)
-    valid_formats = ['habit_list', 'step_guide', 'scripts', 'boring_habits', 'how_to']
-    if args.format is not None and args.format not in valid_formats:
-        errors.append(f"Format must be one of {valid_formats} (got {args.format})")
+    # Validate format (if specified) — built-in formats only checked here;
+    # cloned formats from content_templates.json are validated at runtime in generator
+    builtin_formats = ['habit_list', 'step_guide', 'scripts', 'boring_habits', 'how_to']
+    if args.format is not None and args.format not in builtin_formats:
+        # Allow through — might be a cloned format; generator will validate
+        pass
 
     # Validate count
     if args.count < 1:
@@ -152,9 +154,8 @@ Examples:
     parser.add_argument(
         '--format',
         type=str,
-        choices=['habit_list', 'step_guide', 'scripts', 'boring_habits', 'how_to'],
         default=None,
-        help='Content format (auto-selected if not specified)'
+        help='Content format: habit_list, step_guide, scripts, boring_habits, how_to, or any cloned format name'
     )
 
     parser.add_argument(
@@ -175,6 +176,14 @@ Examples:
         '--random',
         action='store_true',
         help='Generate random topic from content pillars'
+    )
+
+    parser.add_argument(
+        '--style',
+        type=str,
+        choices=['iphone_photo', 'iphone_photo_v2', 'painterly', 'painterly_v2'],
+        default=None,
+        help='Aesthetic style for images (default: random v2 mix)'
     )
 
     parser.add_argument(
@@ -222,6 +231,10 @@ Examples:
         scenes_path=scenes_path if scenes_path.exists() else None,
         content_templates_path=content_templates_path if content_templates_path.exists() else None
     )
+
+    # Set style override if specified
+    if args.style:
+        generator._style_override = args.style
 
     # Generate carousel(s)
     output_dirs = []

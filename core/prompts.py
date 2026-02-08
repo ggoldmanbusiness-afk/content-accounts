@@ -3,7 +3,27 @@ Prompt Templates
 Reusable prompt templates for content generation
 """
 
+import json
+import random
+from pathlib import Path
 from typing import Optional, Dict, List
+
+
+# CTA options for variety — rotated randomly per carousel
+CTA_OPTIONS = [
+    "save this so you can come back to it when you need it",
+    "save for later",
+    "try one tonight",
+    "which one are you trying first? drop it below",
+    "send this to a mom who needs it",
+    "comment which one surprised you most",
+    "save this before you forget",
+]
+
+
+def _random_cta() -> str:
+    """Pick a random CTA for the final slide"""
+    return random.choice(CTA_OPTIONS)
 
 
 def _build_dynamic_hook_instruction(
@@ -157,22 +177,22 @@ CRITICAL: Each tip MUST start with "tip 1:", "tip 2:", "tip 3:", etc. This is RE
 Format for each tip:
 tip 1: [actionable habit - 3-5 words]
 
-[explanation - 2-4 short sentences explaining WHY it works, with conversational asides like "{conv_elements_str}" etc. Make it feel like texting a friend, not a textbook. Mix short punchy statements with longer explanations.]
+[1-2 short sentences max. one punchy insight or personal experience. scannable in 2-3 seconds.]
 
 EXAMPLE TIP FORMAT:
 tip 1: call early morning only
 
-most reps call at 10am when everyone's in meetings. here's the thing - 7-8am catches decision makers at their desk, inbox empty. I tried this for 30 days and connect rate jumped from 12% to 31%. nobody talks about this but timing beats everything.
+7-8am catches decision makers before their inbox fills up. connect rate jumped from 12% to 31%.
 
 SLIDE {num_items + 2} (CTA):
-save this so you can come back to it when you need it
+{_random_cta()}
 
 STYLE RULES:
 - REQUIRED: Start each tip with "tip 1:", "tip 2:", etc (this is NOT meta-text to skip)
 - All lowercase (except "I")
 - Conversational tone like texting a friend
 - Include asides and opinions ("{conv_elements_str}")
-- Mix short punchy statements with explanations
+- CRITICAL: Body text must be 1-2 sentences MAX per tip. Keep it scannable in 2-3 seconds
 - Specific details (times, numbers, exact steps)
 - NO quotation marks
 - NO generic meta-text like "SLIDE X:" or "Hook:" (but "tip N:" is REQUIRED)
@@ -237,21 +257,22 @@ CRITICAL: Each step MUST start with "step 1:", "step 2:", "step 3:", etc. This i
 Format for each step:
 step 1: [action phrase - 3-5 words]
 
-[explanation - 2-4 short sentences explaining the step in conversational tone. Include asides like "{conv_elements_str}" etc. Make it feel like a friend giving advice, not a manual.]
+[1-2 short sentences max. one key insight or personal experience. scannable in 2-3 seconds.]
 
 EXAMPLE STEP FORMAT:
 step 1: start with research
 
-most people skip this. here's the thing - 10 minutes of research saves hours of wasted effort. I learned this the hard way after building the wrong thing twice. nobody talks about this but understanding the problem beats jumping to solutions.
+10 minutes of research saves hours of wasted effort. understanding the problem beats jumping to solutions.
 
 SLIDE {num_items + 2} (CTA):
-save this so you can come back to it when you need it
+{_random_cta()}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc (this is NOT meta-text to skip)
 - All lowercase (except "I")
 - Conversational, human tone (like texting a friend)
 - Include personal voice ("{conv_elements_str}")
+- CRITICAL: Body text must be 1-2 sentences MAX per step. Keep it scannable in 2-3 seconds
 - Specific, actionable steps
 - NO quotation marks
 - NO generic meta-text like "SLIDE X:" or "Hook:" (but "step N:" is REQUIRED)
@@ -284,49 +305,72 @@ def build_scripts_prompt(
         hook_formulas=hook_formulas,
     )
 
-    return f"""Generate a "Scripts That Work" carousel for {topic}.
+    return f"""Generate a bulleted-list carousel for {topic}.
 
-This format provides exact phrases parents can say immediately - copy-paste solutions they can screenshot and use tonight.
+This format provides actionable, scannable bullet points organized into {num_categories} categories. Choose the category label that fits the topic naturally:
+- If the topic is about WHAT TO SAY → use "script 1:", "script 2:", etc.
+- If the topic is a CHECKLIST → use a descriptive label like "kitchen:", "bedroom:", "morning:", etc.
+- If the topic is TIPS/HACKS → use "tip 1:", "tip 2:", etc.
+- Pick whatever label makes the content feel natural and useful.
 
 PROVEN PERFORMANCE: 2,746 views average, 21+ saves
 
-FORMAT: {num_categories} script categories + final CTA slide
+FORMAT: {num_categories} categories + final CTA slide
 
 {hook_instruction}
 
-SLIDES 2-{num_categories + 1} (Script Categories):
-CRITICAL: Each category MUST start with "script 1:", "script 2:", etc. This is REQUIRED.
+SLIDES 2-{num_categories + 1} (Categories):
+CRITICAL: Each category MUST start with a label followed by a colon. This is REQUIRED.
 
 Format for each category:
-script 1: when they're [situation]
+[label]: [category name or situation]
 
-• [exact phrase to say - ≤8 words]
-• [exact phrase to say - ≤8 words]
-• [exact phrase to say - ≤8 words]
+• [actionable item - ≤8 words]
+• [actionable item - ≤8 words]
+• [actionable item - ≤8 words]
 
-EXAMPLE:
+EXAMPLES:
 script 1: when they're upset
 
 • I see you're feeling big feelings
 • your feelings are okay
 • let's breathe together
 
+OR:
+
+kitchen: safety essentials
+
+• cabinet locks on lower doors
+• outlet covers on every socket
+• stove knob covers before they climb
+
 SLIDE {num_categories + 2} (CTA):
-save this for tonight 💙
+{_random_cta()}
 
 STYLE RULES:
-- REQUIRED: Start each category with "script 1:", "script 2:", etc
+- REQUIRED: Each category starts with a label and colon
 - All lowercase
-- Each script phrase ≤8 words
-- 3-4 exact phrases per category
+- Each bullet ≤8 words
+- 3-4 bullets per category
 - Warm, empathetic but direct tone
-- Focus on what TO say (not what NOT to say)
-- Make scripts feel natural, not clinical
-- Cover {num_categories} different scenarios
+- Make it feel natural and immediately useful
+- Cover {num_categories} different scenarios or areas
 
 Target audience: Exhausted parents who need immediate solutions
 
-Generate {num_categories} script categories for "{topic}"."""
+OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
+{{
+  "slides": [
+    {{"text": "[hook text]"}},
+    {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
+    {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
+    ...
+    {{"text": "{_random_cta()}"}}
+  ],
+  "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
+}}
+
+Generate {num_categories} categories for "{topic}"."""
 
 
 def build_boring_habits_prompt(
@@ -373,10 +417,10 @@ EXAMPLE:
 habit 1: same wake time daily
 (even on weekends)
 
-yes I know it sounds too simple. but circadian rhythm needs consistency. their nervous system learns to predict the day. cortisol regulation improves. honestly it's the most boring advice that actually works.
+circadian rhythm needs consistency. their body learns to predict the day and cortisol regulation improves.
 
 SLIDE {num_habits + 2} (CTA):
-try one tonight 💙
+{_random_cta()}
 
 STYLE RULES:
 - REQUIRED: Start each habit with "habit 1:", "habit 2:", etc
@@ -385,6 +429,18 @@ STYLE RULES:
 - Each habit header ≤6 words
 - Focus on boring/obvious things parents skip
 - Make it feel doable
+
+OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
+{{
+  "slides": [
+    {{"text": "[hook text]"}},
+    {{"text": "habit 1: [boring habit]\\n([reason])\\n\\n[1-2 sentences]"}},
+    {{"text": "habit 2: ..."}},
+    ...
+    {{"text": "{_random_cta()}"}}
+  ],
+  "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
+}}
 
 Generate {num_habits} boring habits about "{topic}"."""
 
@@ -433,10 +489,10 @@ EXAMPLE:
 step 1: start bedtime at same time
 (every single night)
 
-consistency cues circadian rhythm. their body learns when sleep is coming. melatonin production syncs up. yes it means weekends too but it works.
+their body learns when sleep is coming and melatonin production syncs up. yes it means weekends too.
 
 SLIDE {num_steps + 2} (CTA):
-save for later 💙
+{_random_cta()}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc
@@ -449,4 +505,68 @@ STYLE RULES:
 
 Target outcome: {outcome}
 
+OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
+{{
+  "slides": [
+    {{"text": "[hook text]"}},
+    {{"text": "step 1: [action phrase]\\n([reason])\\n\\n[1-2 sentences]"}},
+    {{"text": "step 2: ..."}},
+    ...
+    {{"text": "{_random_cta()}"}}
+  ],
+  "pexels_query": "[3-4 word search query for parent/baby stock photos related to {outcome}]"
+}}
+
 Generate {num_steps} sequential steps for "{outcome}"."""
+
+
+def build_blueprint_format_prompt(
+    topic: str,
+    format_config: Dict,
+    brand_voice: str = "conversational",
+    niche: str = "general content",
+) -> str:
+    """Build prompt for any blueprint-derived (cloned) format.
+
+    Reads the stored prompt_template from the format config and fills in
+    placeholders like {topic}, {slide_count}, {voice}.
+
+    Args:
+        topic: Topic to generate about
+        format_config: The format dict from content_templates.json (must have prompt_template)
+        brand_voice: Voice description for the brand
+        niche: Niche description
+
+    Returns:
+        Formatted prompt string ready for LLM
+    """
+    prompt_template = format_config.get("prompt_template", "")
+    if not prompt_template:
+        raise ValueError("Format config missing prompt_template")
+
+    slide_count = format_config.get("default_slide_count", 3)
+    structure = format_config.get("structure", [])
+    caption_strategy = format_config.get("caption_strategy", "hashtags_only")
+
+    # Fill placeholders in the stored prompt template
+    prompt = prompt_template.replace("{topic}", topic)
+    prompt = prompt.replace("{slide_count}", str(slide_count))
+    prompt = prompt.replace("{voice}", brand_voice)
+    prompt = prompt.replace("{niche}", niche)
+    prompt = prompt.replace("{caption_strategy}", caption_strategy)
+
+    # Append output format instruction to ensure consistent JSON structure
+    prompt += f"""
+
+OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
+{{
+  "slides": [
+    {{"slide_num": 1, "text": "<slide 1 text>", "type": "<slide type>"}},
+    {{"slide_num": 2, "text": "<slide 2 text>", "type": "<slide type>"}},
+    ...
+  ],
+  "caption": "<caption text>",
+  "topic": "{topic}"
+}}"""
+
+    return prompt

@@ -85,13 +85,13 @@ class SemanticHookScorer:
         if not self.api_key:
             raise ValueError("No API key found. Set OPENROUTER_API_KEY or OPENAI_API_KEY")
 
-        # Merge custom niche-specific references with defaults
+        # Merge references: niche-specific first (higher priority), then defaults
         self.reference_examples = {k: list(v) for k, v in self.REFERENCE_EXAMPLES.items()}
         if custom_references:
             for dimension, examples in custom_references.items():
                 if dimension in self.reference_examples and isinstance(examples, list):
                     self.reference_examples[dimension] = (
-                        self.reference_examples[dimension] + examples
+                        examples + self.reference_examples[dimension]
                     )
 
     @lru_cache(maxsize=1000)
@@ -165,15 +165,15 @@ class SemanticHookScorer:
             print(f"  [{dimension}] max_sim={max_similarity:.3f}, best='{best_example[:50]}...'")
 
         # Convert similarity (0-1) to score (0-5)
-        # Thresholds empirically tuned for OpenRouter text-embedding-3-small
-        # Lower thresholds needed due to cross-domain semantic matching
-        if max_similarity >= 0.65:
+        # Calibrated against real text-embedding-3-small outputs:
+        #   Cross-domain hooks: 0.19-0.34, Same-niche hooks: 0.35-0.50, Near-match: 0.50-0.70+
+        if max_similarity >= 0.45:
             return 5
-        elif max_similarity >= 0.55:
-            return 4
-        elif max_similarity >= 0.45:
-            return 3
         elif max_similarity >= 0.35:
+            return 4
+        elif max_similarity >= 0.28:
+            return 3
+        elif max_similarity >= 0.20:
             return 2
         else:
             return 1
