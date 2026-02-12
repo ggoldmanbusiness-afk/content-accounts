@@ -1,11 +1,11 @@
 {
-  "safe_sleep_rules": "CRITICAL SAFE SLEEP: Baby in crib must be in sleep sack (wearable blanket) OR swaddled (if under 3 months), NO loose blankets/pillows/stuffed animals in crib, baby on back, empty crib except for baby in sleep sack",
+  "safe_sleep_rules": "CRITICAL SAFE SLEEP: Baby in crib must be in sleep sack (wearable blanket) OR swaddled (if under 3 months), NO loose blankets/pillows/stuffed animals in crib, baby on back, empty crib except for baby in sleep sack, crib must have intact vertical wooden slat bars on all sides, properly constructed crib with no missing or broken bars, cribs should ONLY appear in a child's bedroom or nursery NEVER in living rooms or kitchens",
 
   "aesthetic_styles": {
     "painterly": "Soft painterly illustration, warm cozy atmosphere, moody shadows, grainy texture, NOT stock photo, dark academia aesthetic, cream and navy color palette, intimate moment, soft focus, golden lighting, NO visible text/letters/words/writing/signs/readable characters",
     "iphone_photo": "iPhone photography, authentic candid moment, natural lighting, slightly grainy, real parenting life, NOT posed, NOT professional, casual home setting, warm natural tones, shallow depth of field, intimate real-life moment, NO visible text/letters/words/writing",
-    "painterly_v2": "Soft watercolor illustration, warm cream and blush palette, light airy atmosphere, gentle morning sunlight, soft pastel tones, cozy and inviting, delicate brushstrokes, NOT dark, NOT moody, NOT digital art look, warm golden highlights, intimate tender moment, NO visible text/letters/words/writing/signs",
-    "iphone_photo_v2": "iPhone photo, one parent and one baby only, simple composition with single focal point, natural window light, warm tones, slightly grainy, real lived-in home, NOT multiple babies, NOT collage, NOT split screen, NOT composite, one clear scene per image, casual authentic parenting moment, NO visible text/letters/words/writing"
+    "painterly_v2": "Soft watercolor illustration, warm cream and blush palette, light airy atmosphere, gentle morning sunlight, soft pastel tones, cozy and inviting, delicate brushstrokes, NOT dark, NOT moody, NOT digital art look, warm golden highlights, intimate tender moment, NO visible text/letters/words/writing/signs, NOT picture-in-picture, NOT inset image, NOT small photo within scene, single continuous scene filling entire frame",
+    "iphone_photo_v2": "iPhone photo, one parent and one baby only, simple composition with single focal point, natural window light, warm tones, slightly grainy, real lived-in home, NOT multiple babies, NOT collage, NOT split screen, NOT composite, one clear scene per image, casual authentic parenting moment, NO visible text/letters/words/writing, NOT picture-in-picture, NOT inset image, NOT small photo within scene, single continuous scene filling entire frame"
   },
 
   "brand_anchor": {

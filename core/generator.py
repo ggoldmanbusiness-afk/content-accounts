@@ -250,7 +250,7 @@ class BaseContentGenerator:
                 full_prompt = f"{prompt}, vertical portrait format, 9:16 aspect ratio"
 
                 if i > 1:
-                    full_prompt += ", IMPORTANT: maintain the same visual style, color palette, lighting, and artistic approach as the reference image"
+                    full_prompt += ", IMPORTANT: maintain the same visual style, color palette, lighting, and artistic approach as the reference image. Do NOT create picture-in-picture, inset images, or small photos within the scene. ONE single continuous full-frame scene only"
 
                 # CRITICAL: Enforce safe sleep guidelines for any baby/crib/sleep imagery
                 sleep_keywords = ["baby", "crib", "sleep", "nursery", "nap", "bedtime"]
@@ -869,10 +869,13 @@ class BaseContentGenerator:
             system_prompt = f"""Generate a vivid, attention-grabbing scene description for a social media hook slide about {value_prop}.
 
 Requirements:
-- Scene MUST match the topic/hook content
+- Scene MUST be set in the same environment/location as the topic. If about restaurants, show a restaurant. If about outdoor activities, show outdoors. If about kitchen activities, show a kitchen.
+- NEVER default to a nursery, crib, or sleeping baby unless the topic is specifically about sleep or bedtime.
+- Do NOT show a crib or sleeping baby for non-sleep topics.
 - Include pattern interrupt element (unexpected detail, dramatic lighting, bold composition)
 - Visual drama: use dramatic lighting, interesting angles, emotional moments
 - Stay authentic to the niche and topic
+- Children must be seated in chairs, high chairs, or on laps — NEVER sitting on tables or counters
 
 Return ONLY the scene description, no additional commentary."""
 
@@ -897,10 +900,9 @@ Generate a scene description that creates visual drama and matches this specific
 
         except Exception as e:
             logger.error(f"Failed to generate hook scene prompt: {e}")
-            logger.info("Falling back to brand anchor")
-            # Fallback to brand_anchor
-            anchor_style = "painterly" if "painterly" in base_aesthetic.lower() else "iphone_photo"
-            return self.scenes["brand_anchor"][anchor_style]
+            logger.info("Falling back to topic-aware generic prompt")
+            # Fallback to topic-aware prompt instead of baby-in-crib brand anchor
+            return f"Warm authentic parenting moment related to {topic}, {base_aesthetic}"
 
     def _generate_contextual_prompts(
         self,
@@ -959,7 +961,11 @@ CRITICAL - COMPOSITION RULES:
 - ONE clear scene per image with a single focal point
 - Only ONE baby/child per scene (never show two different babies)
 - NO collages, split screens, or composite images
+- NEVER include a small inset/picture-in-picture image within the scene — each image must be ONE continuous scene filling the entire frame
 - Keep scenes simple and realistic — do not combine objects from different rooms
+- Children must be seated in chairs, high chairs, or on laps — NEVER sitting on tables or counters
+- Match the SETTING to the topic — if about restaurants, every scene should be in a restaurant. Do NOT show nursery/crib scenes for non-sleep topics
+- Cribs should ONLY appear in a child's bedroom or nursery — NEVER in living rooms, kitchens, or other rooms
 
 BASE AESTHETIC (always include at end):
 {base_aesthetic}
@@ -982,7 +988,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                     }
                 ],
                 temperature=0.3,
-                max_tokens=800
+                max_tokens=2000
             )
 
             # Extract JSON array
