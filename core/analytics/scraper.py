@@ -95,17 +95,18 @@ class AccountScraper:
 
         posts = []
         for item in items:
+            # Stats can be top-level or nested under statsV2 depending on actor version
             stats = item.get("statsV2", {})
             posts.append({
                 "post_id": str(item.get("id", "")),
                 "url": item.get("webVideoUrl", ""),
                 "caption": item.get("text", ""),
                 "published_at": item.get("createTimeISO"),
-                "views": stats.get("playCount", 0),
-                "likes": stats.get("diggCount", 0),
-                "comments": stats.get("commentCount", 0),
-                "shares": stats.get("shareCount", 0),
-                "saves": stats.get("collectCount", 0),
+                "views": item.get("playCount") or stats.get("playCount", 0),
+                "likes": item.get("diggCount") or stats.get("diggCount", 0),
+                "comments": item.get("commentCount") or stats.get("commentCount", 0),
+                "shares": item.get("shareCount") or stats.get("shareCount", 0),
+                "saves": item.get("collectCount") or stats.get("collectCount", 0),
             })
         return posts
 
