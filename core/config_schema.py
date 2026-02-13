@@ -144,6 +144,12 @@ class AccountConfig(BaseModel):
     # Hook formulas (optional)
     hook_formulas: List[str] = Field(default_factory=list, description="Custom hook templates")
 
+    # Platform profiles for analytics scraping
+    platform_profiles: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Platform username mapping, e.g. {'tiktok': 'myaccount', 'instagram': 'myaccount'}"
+    )
+
     @field_validator('content_pillars')
     @classmethod
     def validate_pillars(cls, v: List[str]) -> List[str]:

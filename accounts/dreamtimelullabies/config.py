@@ -193,3 +193,9 @@ HOOK_FORMULAS = [
     "What I wish I knew about [topic]",
     "This [expert] told me about [tip]"
 ]
+
+# Platform profiles for analytics scraping
+PLATFORM_PROFILES = {
+    "tiktok": "dreamtimelullabies",
+    "instagram": "dreamtimelullabies",
+}
