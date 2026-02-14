@@ -15,6 +15,8 @@ import json
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -39,6 +41,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dashboard", action="store_true", help="Generate HTML dashboard")
     parser.add_argument("--scrape", action="store_true", help="Run scraper for all accounts")
     parser.add_argument("--recommend", action="store_true", help="Generate new recommendations")
+    parser.add_argument("--backfill-visuals", action="store_true",
+                        help="Extract visual attributes for already-matched posts")
     return parser
 
 
@@ -174,6 +178,7 @@ def handle_pending_recommendations(db: AnalyticsDB, account_name: str):
 
 
 def main():
+    load_dotenv(PROJECT_ROOT / ".env")
     parser = build_parser()
     args = parser.parse_args()
     db = AnalyticsDB(DATA_DIR / "analytics.db")
@@ -201,6 +206,26 @@ def main():
         for account in accounts:
             recs = recommender.generate_recommendations(account)
             console.print(f"[green]Generated {len(recs)} recommendations for {account}[/green]")
+        return
+
+    if args.backfill_visuals:
+        from core.analytics.backfill import BackfillMatcher
+        if not args.account:
+            console.print("[yellow]Specify --account with --backfill-visuals[/yellow]")
+            return
+        account_config = load_account_config(args.account)
+        # Use OUTPUT_CONFIG base_directory if available, fall back to accounts/output
+        output_base = ACCOUNTS_DIR / args.account / "output"
+        if account_config and hasattr(account_config, "OUTPUT_CONFIG"):
+            configured_path = Path(account_config.OUTPUT_CONFIG.get("base_directory", ""))
+            if configured_path.exists():
+                output_base = configured_path
+        if not output_base.exists():
+            console.print(f"[yellow]No output directory found at {output_base}[/yellow]")
+            return
+        matcher = BackfillMatcher(db=db, output_base=output_base)
+        count = matcher.backfill_visuals(args.account)
+        console.print(f"[green]Extracted visual attributes for {count} posts[/green]")
         return
 
     if args.dashboard:

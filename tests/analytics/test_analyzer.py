@@ -32,8 +32,11 @@ class TestAccountAnalyzer:
     def test_pillar_performance(self, db_with_data):
         analyzer = AccountAnalyzer(db=db_with_data)
         result = analyzer.analyze_pillars("test")
-        assert "sleep_routines" in result
-        assert "tantrum_management" in result
+        # Pillars are now grouped into broad categories
+        assert "Sleep & Routines" in result
+        assert "Behavior & Discipline" in result
+        assert result["Sleep & Routines"]["post_count"] == 5
+        assert result["Behavior & Discipline"]["post_count"] == 5
 
     def test_top_and_bottom_posts(self, db_with_data):
         analyzer = AccountAnalyzer(db=db_with_data)
@@ -60,3 +63,59 @@ class TestAccountAnalyzer:
         assert "bottom_posts" in report
         assert "pareto" in report
         assert "summary" in report
+        assert "timeline" in report
+        assert "save_rate" in report
+        assert "cadence" in report
+        assert "recommendations" in report
+        assert "visuals" in report
+        assert "hook_visuals" in report
+        # Save rate should have overall and by_format
+        assert "overall_save_rate" in report["save_rate"]
+        assert "by_format" in report["save_rate"]
+        # Cadence should have posts_per_week
+        assert report["cadence"]["posts_per_week"] is not None
+
+    def test_visual_analysis_empty(self, db_with_data):
+        """Visual analysis returns empty dict when no visual data exists."""
+        analyzer = AccountAnalyzer(db=db_with_data)
+        result = analyzer.analyze_visuals("test")
+        assert result == {}
+
+    def test_visual_analysis_with_data(self, db_with_data):
+        """Visual analysis returns attribute breakdowns when visual data exists."""
+        # Add visual data for some posts
+        db_with_data.upsert_post_visuals(
+            post_id="sg_0",
+            dominant={"photography_style": "iphone_authentic", "lighting": "golden_hour",
+                      "composition": "closeup", "scene_setting": "bedroom", "mood": "warm_cozy"},
+            hook={"composition": "closeup", "photography_style": "iphone_authentic",
+                  "lighting": "golden_hour", "mood": "warm_cozy"},
+            all_attributes={},
+        )
+        db_with_data.upsert_post_visuals(
+            post_id="sg_1",
+            dominant={"photography_style": "iphone_authentic", "lighting": "natural",
+                      "composition": "wide", "scene_setting": "outdoor", "mood": "energetic"},
+            hook={"composition": "wide", "photography_style": "iphone_authentic",
+                  "lighting": "natural", "mood": "energetic"},
+            all_attributes={},
+        )
+        analyzer = AccountAnalyzer(db=db_with_data)
+        result = analyzer.analyze_visuals("test")
+        assert "photography_style" in result
+        assert "iphone_authentic" in result["photography_style"]
+        assert result["photography_style"]["iphone_authentic"]["post_count"] == 2
+
+    def test_hook_visual_analysis(self, db_with_data):
+        """Hook visual analysis returns hook-specific attribute breakdowns."""
+        db_with_data.upsert_post_visuals(
+            post_id="sg_0",
+            dominant={"photography_style": "iphone_authentic"},
+            hook={"composition": "closeup", "photography_style": "iphone_authentic",
+                  "lighting": "golden_hour", "mood": "warm_cozy"},
+            all_attributes={},
+        )
+        analyzer = AccountAnalyzer(db=db_with_data)
+        result = analyzer.analyze_hook_visuals("test")
+        assert "composition" in result
+        assert "closeup" in result["composition"]

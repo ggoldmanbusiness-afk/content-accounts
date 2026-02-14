@@ -24,6 +24,7 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Analytics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -66,7 +67,6 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             -webkit-font-smoothing: antialiased;
         }}
 
-        /* --- HEADER --- */
         .masthead {{
             border-bottom: 1px solid var(--border-subtle);
             padding: 2rem 3rem 1.5rem;
@@ -85,9 +85,7 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             letter-spacing: -0.02em;
             color: var(--text-primary);
         }}
-        .masthead h1 em {{
-            color: var(--accent-warm);
-        }}
+        .masthead h1 em {{ color: var(--accent-warm); }}
         .masthead-meta {{
             font-family: var(--mono);
             font-size: 11px;
@@ -96,14 +94,12 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             text-transform: uppercase;
         }}
 
-        /* --- LAYOUT --- */
         .container {{
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 3rem 4rem;
         }}
 
-        /* --- TABS --- */
         .tab-strip {{
             display: flex;
             gap: 0;
@@ -130,10 +126,9 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             border-bottom-color: var(--accent-warm);
         }}
 
-        /* --- STAT CARDS --- */
         .stat-row {{
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 1px;
             background: var(--border-subtle);
             border: 1px solid var(--border-subtle);
@@ -160,13 +155,14 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             line-height: 1.1;
         }}
         .stat-value.accent {{ color: var(--accent-warm); }}
+        .stat-value.sage {{ color: var(--accent-sage); }}
+        .stat-value.blue {{ color: var(--accent-blue); }}
         .stat-sub {{
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 0.35rem;
         }}
 
-        /* --- SECTION HEADERS --- */
         .section-header {{
             margin-top: 3rem;
             margin-bottom: 1.25rem;
@@ -190,7 +186,6 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             color: var(--text-muted);
         }}
 
-        /* --- CHARTS --- */
         .chart-grid {{
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -217,8 +212,11 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             position: relative;
             height: 260px;
         }}
+        .chart-container-tall {{
+            position: relative;
+            height: 320px;
+        }}
 
-        /* --- TABLES --- */
         .data-table-wrapper {{
             border: 1px solid var(--border-subtle);
             overflow: hidden;
@@ -275,7 +273,6 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
         .badge-blue {{ background: rgba(106, 159, 212, 0.15); color: var(--accent-blue); }}
         .badge-lavender {{ background: rgba(164, 136, 199, 0.15); color: var(--accent-lavender); }}
 
-        /* --- PARETO INSIGHT --- */
         .insight-bar {{
             margin-top: 2.5rem;
             border: 1px solid var(--accent-warm-dim);
@@ -290,6 +287,7 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             font-size: 1.6rem;
             color: var(--accent-warm);
             line-height: 1;
+            flex-shrink: 0;
         }}
         .insight-bar .insight-text {{
             font-size: 14px;
@@ -301,11 +299,53 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             font-weight: 500;
         }}
 
-        /* --- ACCOUNT SECTIONS --- */
+        /* --- RECOMMENDATIONS --- */
+        .rec-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border-subtle);
+            border: 1px solid var(--border-subtle);
+        }}
+        .rec-card {{
+            background: var(--bg-surface);
+            padding: 1.5rem 1.75rem;
+        }}
+        .rec-card-full {{
+            grid-column: 1 / -1;
+        }}
+        .rec-category {{
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }}
+        .rec-confidence-high {{ color: var(--accent-sage); }}
+        .rec-confidence-medium {{ color: var(--accent-warm); }}
+        .rec-confidence-low {{ color: var(--accent-rose); }}
+        .rec-insight {{
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }}
+        .rec-status {{
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 2px 8px;
+            border-radius: var(--radius);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }}
+        .rec-status-approved {{ background: rgba(126, 184, 154, 0.15); color: var(--accent-sage); }}
+        .rec-status-pending {{ background: rgba(232, 195, 126, 0.15); color: var(--accent-warm); }}
+        .rec-status-rejected {{ background: rgba(212, 117, 106, 0.15); color: var(--accent-rose); }}
+
         .account-section {{ display: none; }}
         .account-section.active {{ display: block; }}
 
-        /* --- EMPTY STATE --- */
         .empty-state {{
             text-align: center;
             padding: 4rem 2rem;
@@ -315,15 +355,14 @@ def generate_dashboard(reports: dict, output_dir: Path = None) -> Path:
             font-style: italic;
         }}
 
-        /* --- RESPONSIVE --- */
         @media (max-width: 900px) {{
             .container {{ padding: 0 1.5rem 3rem; }}
             .masthead {{ padding: 1.5rem; }}
             .stat-row {{ grid-template-columns: repeat(2, 1fr); }}
             .chart-grid {{ grid-template-columns: 1fr; }}
+            .rec-grid {{ grid-template-columns: 1fr; }}
         }}
 
-        /* --- NOISE TEXTURE --- */
         body::before {{
             content: '';
             position: fixed;
@@ -360,7 +399,6 @@ Chart.defaults.borderColor = '#2a2a30';
 Chart.defaults.font.family = "'DM Sans', sans-serif";
 Chart.defaults.font.size = 11;
 
-// Build tabs
 const tabBar = document.getElementById('tabs');
 accounts.forEach((name, i) => {{
     const tab = document.createElement('div');
@@ -379,8 +417,8 @@ accounts.forEach((name, i) => {{
 const content = document.getElementById('content');
 const formatBadgeMap = {{}};
 
-function fmt(n) {{ return n == null ? '—' : Number(n).toLocaleString(); }}
-function pct(n) {{ return n == null ? '—' : (Number(n) * 100).toFixed(1) + '%'; }}
+function fmt(n) {{ return n == null ? '\u2014' : Number(n).toLocaleString(); }}
+function pct(n) {{ return n == null ? '\u2014' : (Number(n) * 100).toFixed(1) + '%'; }}
 function getBadge(format) {{
     if (!formatBadgeMap[format]) {{
         const idx = Object.keys(formatBadgeMap).length % BADGE_CLASSES.length;
@@ -399,6 +437,12 @@ accounts.forEach((name, idx) => {{
     const pareto = report.pareto || {{}};
     const hookCorr = report.hook_correlation || [];
     const slideCounts = report.slide_count || [];
+    const timeline = report.timeline || [];
+    const saveRate = report.save_rate || {{}};
+    const cadence = report.cadence || {{}};
+    const recommendations = report.recommendations || [];
+    const visuals = report.visuals || {{}};
+    const hookVisuals = report.hook_visuals || {{}};
 
     const section = document.createElement('div');
     section.id = 'section-' + name;
@@ -409,6 +453,8 @@ accounts.forEach((name, idx) => {{
     const totalViews = summary.total_views || 0;
     const avgEng = summary.avg_engagement_rate || 0;
     const bestViews = summary.best_views || 0;
+    const overallSaveRate = saveRate.overall_save_rate || 0;
+    const postsPerWeek = cadence.posts_per_week || 0;
 
     if (totalPosts === 0) {{
         section.innerHTML = '<div class="empty-state">No performance data yet. Run a scrape first.</div>';
@@ -420,10 +466,10 @@ accounts.forEach((name, idx) => {{
     const topFormats = (pareto.top_formats || []);
     const topPillars = (pareto.top_pillars || []);
     let insightHTML = '';
-    if (topFormats.length > 0) {{
+    if (topFormats.length > 1) {{
         const best = topFormats[0];
         const worst = topFormats[topFormats.length - 1];
-        if (topFormats.length > 1 && best.format !== worst.format) {{
+        if (best.format !== worst.format) {{
             const ratio = (best.avg_views / (worst.avg_views || 1)).toFixed(1);
             insightHTML = `
                 <div class="insight-bar">
@@ -435,6 +481,28 @@ accounts.forEach((name, idx) => {{
                     </div>
                 </div>`;
         }}
+    }}
+
+    // Recommendations HTML
+    let recsHTML = '';
+    if (recommendations.length > 0) {{
+        let recsCards = '';
+        recommendations.forEach(rec => {{
+            const conf = rec.confidence || 'medium';
+            const status = rec.status || 'pending';
+            recsCards += `
+                <div class="rec-card">
+                    <div class="rec-category rec-confidence-${{conf}}">${{conf.toUpperCase()}} \u00b7 ${{(rec.category || '').replace(/_/g, ' ')}}</div>
+                    <div class="rec-insight">${{rec.insight || ''}}</div>
+                    <span class="rec-status rec-status-${{status}}">${{status}}</span>
+                </div>`;
+        }});
+        recsHTML = `
+            <div class="section-header">
+                <h2>AI Recommendations</h2>
+                <span class="section-tag">Intelligence</span>
+            </div>
+            <div class="rec-grid">${{recsCards}}</div>`;
     }}
 
     section.innerHTML = `
@@ -457,31 +525,55 @@ accounts.forEach((name, idx) => {{
                 <div class="stat-value">${{pct(avgEng)}}</div>
                 <div class="stat-sub">Best: ${{fmt(bestViews)}} views</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-label">Save Rate</div>
+                <div class="stat-value sage">${{overallSaveRate.toFixed(1)}}%</div>
+                <div class="stat-sub">saves / views</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Post Cadence</div>
+                <div class="stat-value blue">${{postsPerWeek.toFixed(1)}}</div>
+                <div class="stat-sub">posts / week</div>
+            </div>
         </div>
 
         ${{insightHTML}}
 
-        <!-- CHARTS -->
+        ${{recsHTML}}
+
+        <!-- TIMELINE -->
+        <div class="section-header">
+            <h2>Growth</h2>
+            <span class="section-tag">Over Time</span>
+        </div>
+        <div class="chart-grid">
+            <div class="chart-cell chart-cell-full">
+                <div class="chart-title">Views Over Time</div>
+                <div class="chart-container-tall"><canvas id="chart-timeline-${{name}}"></canvas></div>
+            </div>
+        </div>
+
+        <!-- FORMAT CHARTS -->
         <div class="section-header">
             <h2>Performance</h2>
-            <span class="section-tag">Charts</span>
+            <span class="section-tag">By Format</span>
         </div>
         <div class="chart-grid">
             <div class="chart-cell">
-                <div class="chart-title">Views by Format</div>
+                <div class="chart-title">Avg Views by Format</div>
                 <div class="chart-container"><canvas id="chart-views-${{name}}"></canvas></div>
             </div>
             <div class="chart-cell">
-                <div class="chart-title">Saves by Format</div>
-                <div class="chart-container"><canvas id="chart-saves-${{name}}"></canvas></div>
+                <div class="chart-title">Save Rate by Format</div>
+                <div class="chart-container"><canvas id="chart-saverate-${{name}}"></canvas></div>
             </div>
             <div class="chart-cell">
                 <div class="chart-title">Engagement Rate by Format</div>
                 <div class="chart-container"><canvas id="chart-eng-${{name}}"></canvas></div>
             </div>
             <div class="chart-cell">
-                <div class="chart-title">${{Object.keys(pillars).length > 0 ? 'Pillar Performance' : 'Hook Score vs Views'}}</div>
-                <div class="chart-container"><canvas id="chart-secondary-${{name}}"></canvas></div>
+                <div class="chart-title">Pillar Performance</div>
+                <div class="chart-container"><canvas id="chart-pillars-${{name}}"></canvas></div>
             </div>
         </div>
 
@@ -492,7 +584,7 @@ accounts.forEach((name, idx) => {{
         </div>
         <div class="data-table-wrapper">
             <table>
-                <thead><tr><th>Format</th><th>Posts</th><th>Avg Views</th><th>Avg Saves</th><th>Engagement</th></tr></thead>
+                <thead><tr><th>Format</th><th>Posts</th><th>Avg Views</th><th>Avg Saves</th><th>Save Rate</th><th>Engagement</th></tr></thead>
                 <tbody id="format-table-${{name}}"></tbody>
             </table>
         </div>
@@ -520,22 +612,105 @@ accounts.forEach((name, idx) => {{
                 <tbody id="bottom-table-${{name}}"></tbody>
             </table>
         </div>
+
+        <!-- VISUAL ANALYTICS -->
+        ${{Object.keys(visuals).length > 0 ? `
+        <div class="section-header">
+            <h2>Visual Analytics</h2>
+            <span class="section-tag">Image Attributes</span>
+        </div>
+        <div class="chart-grid">
+            <div class="chart-cell">
+                <div class="chart-title">Photography Style vs Avg Views</div>
+                <div class="chart-container"><canvas id="chart-vis-photo-${{name}}"></canvas></div>
+            </div>
+            <div class="chart-cell">
+                <div class="chart-title">Lighting vs Avg Views</div>
+                <div class="chart-container"><canvas id="chart-vis-light-${{name}}"></canvas></div>
+            </div>
+            <div class="chart-cell">
+                <div class="chart-title">Hook Composition vs Avg Views</div>
+                <div class="chart-container"><canvas id="chart-vis-hookcomp-${{name}}"></canvas></div>
+            </div>
+            <div class="chart-cell">
+                <div class="chart-title">Scene Setting vs Avg Views</div>
+                <div class="chart-container"><canvas id="chart-vis-scene-${{name}}"></canvas></div>
+            </div>
+            <div class="chart-cell chart-cell-full">
+                <div class="chart-title">Hook Subject Focus vs Avg Views</div>
+                <div class="chart-container"><canvas id="chart-vis-hooksubj-${{name}}"></canvas></div>
+            </div>
+        </div>
+        ` : ''}}
     `;
     content.appendChild(section);
 
     // --- CHARTS ---
     const fmtNames = Object.keys(formats);
-    const chartOpts = (horizontal = false) => ({{
-        responsive: true, maintainAspectRatio: false, indexAxis: horizontal ? 'y' : 'x',
+    const chartOpts = () => ({{
+        responsive: true, maintainAspectRatio: false,
+        layout: {{ padding: {{ left: 5 }} }},
         plugins: {{ legend: {{ display: false }} }},
         scales: {{
             x: {{ grid: {{ color: '#1f1f24' }}, ticks: {{ font: {{ family: "'DM Sans'" }} }} }},
-            y: {{ grid: {{ color: '#1f1f24' }}, ticks: {{ font: {{ family: "'DM Sans'" }} }} }}
+            y: {{ grid: {{ color: '#1f1f24' }}, ticks: {{ font: {{ family: "'DM Sans'" }}, padding: 8 }} }}
         }}
     }});
 
+    // Timeline chart
+    if (timeline.length > 0) {{
+        const timelineData = timeline
+            .filter(t => t.published_at)
+            .map(t => ({{ x: new Date(t.published_at), y: t.views || 0, hook: (t.hook_text || '').slice(0, 40) }}));
+
+        new Chart(document.getElementById('chart-timeline-' + name), {{
+            type: 'line',
+            data: {{
+                datasets: [{{
+                    data: timelineData,
+                    borderColor: '#e8c37e',
+                    backgroundColor: 'rgba(232, 195, 126, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#e8c37e',
+                    pointBorderColor: '#0a0a0c',
+                    pointBorderWidth: 2,
+                    borderWidth: 2,
+                }}]
+            }},
+            options: {{
+                responsive: true, maintainAspectRatio: false,
+                plugins: {{
+                    legend: {{ display: false }},
+                    tooltip: {{
+                        callbacks: {{
+                            label: (ctx) => {{
+                                const pt = timelineData[ctx.dataIndex];
+                                return [pt.y.toLocaleString() + ' views', pt.hook];
+                            }}
+                        }}
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        type: 'time',
+                        time: {{ unit: 'day', displayFormats: {{ day: 'MMM d' }} }},
+                        grid: {{ color: '#1f1f24' }},
+                        ticks: {{ font: {{ family: "'DM Sans'" }} }}
+                    }},
+                    y: {{
+                        grid: {{ color: '#1f1f24' }},
+                        ticks: {{ font: {{ family: "'DM Sans'" }} }}
+                    }}
+                }}
+            }}
+        }});
+    }}
+
     if (fmtNames.length > 0) {{
-        // Views
+        // Views by format
         new Chart(document.getElementById('chart-views-' + name), {{
             type: 'bar', data: {{
                 labels: fmtNames,
@@ -544,16 +719,20 @@ accounts.forEach((name, idx) => {{
                     borderRadius: 1, barPercentage: 0.7 }}]
             }}, options: chartOpts()
         }});
-        // Saves
-        new Chart(document.getElementById('chart-saves-' + name), {{
+
+        // Save rate by format
+        const saveRateByFmt = saveRate.by_format || {{}};
+        new Chart(document.getElementById('chart-saverate-' + name), {{
             type: 'bar', data: {{
                 labels: fmtNames,
-                datasets: [{{ data: fmtNames.map(f => Math.round(formats[f].avg_saves || 0)),
+                datasets: [{{ data: fmtNames.map(f => saveRateByFmt[f] || 0),
                     backgroundColor: fmtNames.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
                     borderRadius: 1, barPercentage: 0.7 }}]
-            }}, options: chartOpts()
+            }}, options: {{ ...chartOpts(), scales: {{ ...chartOpts().scales,
+                y: {{ ...chartOpts().scales.y, ticks: {{ callback: v => v + '%', font: {{ family: "'DM Sans'" }} }} }} }} }}
         }});
-        // Engagement
+
+        // Engagement by format
         new Chart(document.getElementById('chart-eng-' + name), {{
             type: 'bar', data: {{
                 labels: fmtNames,
@@ -565,34 +744,48 @@ accounts.forEach((name, idx) => {{
         }});
     }}
 
-    // Secondary chart: pillars or hook correlation
+    // Pillar chart (now grouped)
     const pillarNames = Object.keys(pillars);
     if (pillarNames.length > 0) {{
-        new Chart(document.getElementById('chart-secondary-' + name), {{
+        new Chart(document.getElementById('chart-pillars-' + name), {{
             type: 'bar', data: {{
-                labels: pillarNames.map(p => p.replace(/_/g, ' ')),
+                labels: pillarNames,
                 datasets: [{{ data: pillarNames.map(p => Math.round(pillars[p].avg_views || 0)),
                     backgroundColor: pillarNames.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
                     borderRadius: 1, barPercentage: 0.7 }}]
             }}, options: chartOpts()
         }});
-    }} else if (hookCorr.length > 0) {{
-        new Chart(document.getElementById('chart-secondary-' + name), {{
-            type: 'scatter', data: {{
-                datasets: [{{ data: hookCorr.map(h => ({{ x: h.hook_score, y: h.avg_views }})),
-                    backgroundColor: '#e8c37e', pointRadius: 6, pointHoverRadius: 8 }}]
-            }}, options: {{ responsive: true, maintainAspectRatio: false,
-                plugins: {{ legend: {{ display: false }} }},
-                scales: {{
-                    x: {{ title: {{ display: true, text: 'Hook Score', color: '#5c5c62' }}, grid: {{ color: '#1f1f24' }} }},
-                    y: {{ title: {{ display: true, text: 'Avg Views', color: '#5c5c62' }}, grid: {{ color: '#1f1f24' }} }}
-                }}
-            }}
+    }}
+
+    // --- VISUAL CHARTS ---
+    function renderVisualChart(canvasId, attrData) {{
+        const el = document.getElementById(canvasId);
+        if (!el || !attrData) return;
+        const labels = Object.keys(attrData);
+        if (labels.length === 0) return;
+        const values = labels.map(l => Math.round(attrData[l].avg_views || 0));
+        new Chart(el, {{
+            type: 'bar', data: {{
+                labels: labels.map(l => l.replace(/_/g, ' ')),
+                datasets: [{{ data: values,
+                    backgroundColor: labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
+                    borderRadius: 1, barPercentage: 0.7 }}]
+            }}, options: chartOpts()
         }});
+    }}
+
+    if (Object.keys(visuals).length > 0) {{
+        renderVisualChart('chart-vis-photo-' + name, visuals.photography_style);
+        renderVisualChart('chart-vis-light-' + name, visuals.lighting);
+        renderVisualChart('chart-vis-scene-' + name, visuals.scene_setting);
+        // Hook composition uses hookVisuals data
+        renderVisualChart('chart-vis-hookcomp-' + name, (hookVisuals || {{}}).composition);
+        renderVisualChart('chart-vis-hooksubj-' + name, (hookVisuals || {{}}).subject_focus);
     }}
 
     // --- TABLES ---
     const fmtBody = document.getElementById('format-table-' + name);
+    const saveRateByFmt = saveRate.by_format || {{}};
     const sorted = [...fmtNames].sort((a, b) => (formats[b].avg_views || 0) - (formats[a].avg_views || 0));
     sorted.forEach(f => {{
         const d = formats[f];
@@ -601,6 +794,7 @@ accounts.forEach((name, idx) => {{
             <td>${{d.post_count}}</td>
             <td>${{fmt(Math.round(d.avg_views))}}</td>
             <td>${{fmt(Math.round(d.avg_saves))}}</td>
+            <td>${{(saveRateByFmt[f] || 0).toFixed(1)}}%</td>
             <td>${{pct(d.avg_engagement_rate)}}</td>
         </tr>`;
     }});

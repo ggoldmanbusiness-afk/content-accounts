@@ -80,6 +80,36 @@ SELECT
     MAX(views) as best_views
 FROM v_post_performance
 GROUP BY account_name;
+
+CREATE TABLE IF NOT EXISTS post_visuals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id TEXT NOT NULL UNIQUE REFERENCES posts(post_id),
+    photography_style TEXT,
+    lighting TEXT,
+    color_palette TEXT,
+    composition TEXT,
+    scene_setting TEXT,
+    subject_focus TEXT,
+    mood TEXT,
+    hook_composition TEXT,
+    hook_photography_style TEXT,
+    hook_lighting TEXT,
+    hook_mood TEXT,
+    hook_subject_focus TEXT,
+    all_attributes_json TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE VIEW IF NOT EXISTS v_visual_performance AS
+SELECT
+    pp.*,
+    pv.photography_style, pv.lighting, pv.color_palette,
+    pv.composition, pv.scene_setting, pv.subject_focus, pv.mood,
+    pv.hook_composition, pv.hook_photography_style,
+    pv.hook_lighting, pv.hook_mood, pv.hook_subject_focus,
+    pv.all_attributes_json
+FROM v_post_performance pp
+JOIN post_visuals pv ON pp.post_id = pv.post_id;
 """
 
 
@@ -200,3 +230,66 @@ class AnalyticsDB:
             (status, approved_at, rec_id)
         )
         self.conn.commit()
+
+    # --- Post Visuals ---
+
+    def upsert_post_visuals(self, post_id: str, dominant: dict, hook: dict,
+                            all_attributes: dict):
+        """Insert or update visual attributes for a post."""
+        all_json = json.dumps(all_attributes) if all_attributes else "{}"
+        existing = self.conn.execute(
+            "SELECT id FROM post_visuals WHERE post_id = ?", (post_id,)
+        ).fetchone()
+
+        params = (
+            dominant.get("photography_style"),
+            dominant.get("lighting"),
+            dominant.get("color_palette"),
+            dominant.get("composition"),
+            dominant.get("scene_setting"),
+            dominant.get("subject_focus"),
+            dominant.get("mood"),
+            hook.get("composition"),
+            hook.get("photography_style"),
+            hook.get("lighting"),
+            hook.get("mood"),
+            hook.get("subject_focus"),
+            all_json,
+        )
+
+        if existing:
+            self.conn.execute(
+                """UPDATE post_visuals SET
+                    photography_style=?, lighting=?, color_palette=?,
+                    composition=?, scene_setting=?, subject_focus=?, mood=?,
+                    hook_composition=?, hook_photography_style=?,
+                    hook_lighting=?, hook_mood=?, hook_subject_focus=?,
+                    all_attributes_json=?
+                WHERE post_id = ?""",
+                (*params, post_id)
+            )
+        else:
+            self.conn.execute(
+                """INSERT INTO post_visuals
+                    (post_id, photography_style, lighting, color_palette,
+                     composition, scene_setting, subject_focus, mood,
+                     hook_composition, hook_photography_style,
+                     hook_lighting, hook_mood, hook_subject_focus,
+                     all_attributes_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (post_id, *params)
+            )
+        self.conn.commit()
+
+    def get_post_visuals(self, post_id: str) -> Optional[dict]:
+        row = self.conn.execute(
+            "SELECT * FROM post_visuals WHERE post_id = ?", (post_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+    def get_visuals_for_account(self, account_name: str) -> list[dict]:
+        rows = self.conn.execute(
+            "SELECT * FROM v_visual_performance WHERE account_name = ?",
+            (account_name,)
+        ).fetchall()
+        return [dict(r) for r in rows]

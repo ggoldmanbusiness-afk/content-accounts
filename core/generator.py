@@ -314,10 +314,18 @@ class BaseContentGenerator:
         caption_path.write_text(caption)
 
         # 7. Save metadata
+        import hashlib
+        hook_text = content["slides"][0].get("text", "") if content.get("slides") else ""
+        content_id = hashlib.sha256(
+            f"{topic}|{content_format}|{hook_text}".encode()
+        ).hexdigest()[:12]
         meta = {
             "account": self.config.account_name,
             "topic": topic,
             "format": content_format,
+            "content_id": content_id,
+            "hook_text": hook_text,
+            "caption": caption,
             "num_items": num_items,
             "hook_strategy": hook_strategy,
             "timestamp": datetime.now().isoformat(),
