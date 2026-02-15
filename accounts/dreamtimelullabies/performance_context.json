@@ -1,0 +1,205 @@
+{
+  "last_updated": "2026-02-15",
+  "sample_size": 31,
+  "format_weights": {},
+  "top_pillars": [],
+  "underperforming_pillars": [],
+  "optimal_slide_count": 5,
+  "hook_insights": {
+    "best_styles": [],
+    "worst_styles": [],
+    "reference_hooks": []
+  },
+  "save_vs_share": {
+    "high_save_formats": [],
+    "high_share_formats": []
+  },
+  "experiment_suggestions": [],
+  "approved_recommendations": [
+    {
+      "id": 1,
+      "insight": "The 'habit_list' format is the clear winner: 6 posts averaging 3,424 views and 6.09% engagement rate vs account average of 1,498 views and 3.23%. This single format (19% of posts) is driving disproportionate results. The top post using this format hit 15,300 views with 332 saves - 10x the account average.",
+      "approved_at": "2026-02-13T18:09:07.770441"
+    },
+    {
+      "id": 2,
+      "insight": "Posts with only hashtags as hooks (no actual hook text) are failing dramatically: 3 bottom performers averaged 298 views vs 1,498 account average. Post 7601563939775859999 had only hashtags and got 172 views. Post 7601999705182194975 with 'Screen time doesn't have to be a fight' hook still only got 448 views, suggesting the pillar itself may be oversaturated.",
+      "approved_at": "2026-02-13T18:09:07.771625"
+    },
+    {
+      "id": 3,
+      "insight": "DIY/activity content drives saves (DIY cardboard: 26 saves, fine motor: 41 saves, outdoor activities: 332 saves) while achieving 9.58%, 8.99%, and 6.58% engagement respectively. These save-heavy posts average 3,732 views vs 1,498 overall. In contrast, 'picky eater strategies' got only 1 save despite 1,011 views, indicating low perceived value.",
+      "approved_at": "2026-02-13T18:09:07.771657"
+    },
+    {
+      "id": 4,
+      "insight": "Only 12 of 31 posts have identified formats, and 5-slide posts (11 posts, 2,242 avg views, 42.5 avg saves) outperform 3-slide posts (1 post, 1,942 views, 13 saves). However, we have zero data on 6-7 slide formats, video-only, or carousel variations. The 'before_after' format shows promise (1,942 views, 1.54% engagement) but only has 1 post - insufficient data.",
+      "approved_at": "2026-02-13T18:09:07.771674"
+    },
+    {
+      "id": 5,
+      "insight": "Content pillar distribution is too fragmented: 12 pillars with only 1 post each makes pattern detection impossible. The one pillar tested at scale doesn't exist. Meanwhile, 'outdoor activities' (15,300 views, 6.58% engagement) and 'DIY activities' (929 views, 9.58% engagement) suggest a 'hands-on activities' super-pillar could work. Current approach lacks focus and repeatability.",
+      "approved_at": "2026-02-13T18:09:07.771690"
+    }
+  ],
+  "format_targets": {
+    "habit_list": 0.5,
+    "scripts": 0.15,
+    "before_after": 0.15,
+    "step_guide": 0.1,
+    "boring_habits": 0.1
+  },
+  "rationale": "Eliminate lazy hooks and pause underperforming pillars with <500 avg views",
+  "hook_requirements": {
+    "min_character_count": 50,
+    "must_include_specific_outcome": true,
+    "banned_patterns": [
+      "hashtag-only",
+      "generic_question_without_specificity"
+    ]
+  },
+  "pillars_to_pause": [
+    "screen time"
+  ],
+  "pillar_priority_tiers": {
+    "tier_1_proven": [
+      "sensory and outdoor activities",
+      "sleep and routines"
+    ],
+    "tier_2_promising": [
+      "situational parenting"
+    ],
+    "tier_3_explore": [
+      "travel and outings with kids",
+      "toddler independence hacks",
+      "potty training",
+      "learning through play",
+      "mess-free indoor activities",
+      "parent mental health",
+      "bath time activities",
+      "seasonal activities",
+      "transition prep for daycare and new siblings",
+      "special needs parenting",
+      "rainy day movement games",
+      "calm down corner activities",
+      "kitchen science experiments",
+      "music and rhythm play",
+      "obstacle courses at home",
+      "gross motor skill builders",
+      "fine motor busy boxes",
+      "pretend play setups",
+      "cardboard box creations",
+      "color sorting challenges",
+      "texture exploration bins",
+      "storytelling with props",
+      "nature crafts indoors",
+      "water table variations",
+      "playdough recipe alternatives",
+      "toddler yoga poses",
+      "dance party themes",
+      "building block challenges",
+      "puppet show ideas",
+      "matching and pairing games",
+      "treasure hunt activities",
+      "bubble play experiments",
+      "painting without paintbrushes",
+      "fort building techniques",
+      "sound scavenger hunts",
+      "magnetic play ideas",
+      "recycled material crafts",
+      "sticker scene activities",
+      "shadow play games",
+      "simple cooking tasks"
+    ]
+  },
+  "content_angle": "Focus on actionable activities over advice/strategies - activities average 73 saves vs advice averaging 5.5 saves",
+  "experiment_queue": [
+    {
+      "format": "habit_list",
+      "slide_count": 7,
+      "test_count": 3,
+      "hypothesis": "More slides = more saves for list format"
+    },
+    {
+      "format": "before_after",
+      "slide_count": 5,
+      "test_count": 5,
+      "hypothesis": "Validate before_after format with proper sample size"
+    },
+    {
+      "format": "myth_busting",
+      "slide_count": 5,
+      "test_count": 3,
+      "hypothesis": "New format for parenting advice angle"
+    },
+    {
+      "format": "habit_list_video",
+      "slide_count": 0,
+      "test_count": 3,
+      "hypothesis": "Test video vs carousel for top format"
+    }
+  ],
+  "exploration_budget": 0.25,
+  "consolidated_pillars": {
+    "sensory_and_outdoor_activities": {
+      "target_posts_per_month": 8,
+      "sub_topics": [
+        "outdoor activities",
+        "DIY activities",
+        "fine motor activities",
+        "rainy day activities"
+      ],
+      "rationale": "Merge high-performing activity pillars - averaging 4,606 views and 104.75 saves"
+    },
+    "sleep_and_routines": {
+      "target_posts_per_month": 4,
+      "sub_topics": [
+        "bedtime routine",
+        "sleep consistency"
+      ],
+      "rationale": "Core account theme, needs consistency"
+    },
+    "situational_parenting": {
+      "target_posts_per_month": 3,
+      "sub_topics": [
+        "restaurant waits",
+        "exhausted parent activities"
+      ],
+      "rationale": "Specific scenarios perform better than generic advice"
+    }
+  },
+  "retire_pillars": [
+    "picky eater strategies that work",
+    "screen time",
+    "5 minute activities when you're exhausted"
+  ],
+  "min_posts_before_evaluation": 5,
+  "visual_insights": {
+    "top_performing": {
+      "photography_style": "iphone_authentic",
+      "lighting": "natural",
+      "color_palette": "warm_golden",
+      "composition": "wide",
+      "scene_setting": "outdoor",
+      "subject_focus": "hands_detail",
+      "mood": "warm_cozy"
+    },
+    "hook_recipe": {
+      "composition": "low_angle",
+      "photography_style": "iphone_authentic",
+      "lighting": "golden_hour",
+      "mood": "warm_cozy",
+      "subject_focus": "child_solo"
+    },
+    "sample_size": 16
+  },
+  "explore_targets": {
+    "lighting": [
+      "golden_hour"
+    ],
+    "mood": [
+      "calm"
+    ]
+  },
+  "exploration_ratio": 0.4
+}

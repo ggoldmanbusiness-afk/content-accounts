@@ -28,7 +28,7 @@ def setup_logging(verbose: bool = False):
     )
 
 
-def load_account_config(account_name: str) -> tuple[AccountConfig, Path]:
+def load_account_config(account_name: str) -> tuple[AccountConfig, Path, Optional[dict]]:
     """
     Dynamically load and validate account config
 
@@ -36,7 +36,7 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path]:
         account_name: Account directory name
 
     Returns:
-        Tuple of (validated AccountConfig, account directory path)
+        Tuple of (validated AccountConfig, account directory path, platform_profiles or None)
 
     Raises:
         ValueError: If account not found or config invalid
@@ -63,6 +63,9 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path]:
     config_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(config_module)
 
+    # Extract platform profiles for scraper integration
+    platform_profiles = getattr(config_module, 'PLATFORM_PROFILES', None)
+
     # Build AccountConfig from module
     try:
         account_config = AccountConfig(
@@ -86,10 +89,99 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path]:
             gemini_api_key=getattr(config_module, 'GEMINI_API_KEY', None)
         )
 
-        return account_config, account_dir
+        return account_config, account_dir, platform_profiles
 
     except Exception as e:
         raise ValueError(f"Invalid config for account '{account_name}': {e}")
+
+
+def ensure_fresh_data(account_name: str, account_dir: Path, platform_profiles: Optional[dict],
+                      output_base_dir: Optional[str] = None):
+    """Auto-scrape + backfill + refresh context if data is stale (>1 day).
+
+    Runs entirely from local DB + Apify. No-op if data is fresh.
+    """
+    from datetime import datetime, timedelta
+
+    logger = logging.getLogger(__name__)
+    project_root = Path(__file__).parent.parent
+    db_path = project_root / "data" / "analytics.db"
+
+    from core.analytics.db import AnalyticsDB
+    db = AnalyticsDB(db_path)
+
+    # Check when we last scraped for this account
+    row = db.execute("""
+        SELECT MAX(ms.scraped_at) as last_scraped
+        FROM metrics_snapshots ms
+        JOIN posts p ON ms.post_id = p.post_id
+        WHERE p.account_name = ?
+    """, (account_name,)).fetchone()
+
+    last_scraped = row["last_scraped"] if row else None
+    stale_threshold = datetime.now() - timedelta(days=1)
+
+    if last_scraped:
+        try:
+            scraped_dt = datetime.fromisoformat(str(last_scraped).replace("Z", "+00:00"))
+            # Compare naive datetimes
+            if scraped_dt.tzinfo:
+                scraped_dt = scraped_dt.replace(tzinfo=None)
+            days_ago = (datetime.now() - scraped_dt).days
+            if scraped_dt > stale_threshold:
+                logger.info(f"📊 Data is fresh (last scraped {days_ago} day(s) ago) — skipping pipeline")
+                db.close()
+                return
+            logger.info(f"📊 Data is stale (last scraped {days_ago} days ago) — running auto-refresh...")
+        except (ValueError, TypeError):
+            logger.info("📊 Can't parse last scrape date — running auto-refresh...")
+    else:
+        logger.info("📊 No scrape data found — running auto-refresh...")
+
+    # Step 1: Scrape (if platform profiles available)
+    if platform_profiles:
+        try:
+            from core.analytics.scraper import AccountScraper
+            scraper = AccountScraper(db=db)
+            for platform, username in platform_profiles.items():
+                result = scraper.scrape_account(account_name, platform, username)
+                new = result.get("new_posts", 0)
+                updated = result.get("updated_posts", 0)
+                logger.info(f"   Scraped {platform}/@{username}: {new} new, {updated} updated")
+        except Exception as e:
+            logger.warning(f"   Scrape failed (continuing anyway): {e}")
+    else:
+        logger.info("   No platform profiles configured — skipping scrape")
+
+    # Step 2: Backfill (match scraped posts to generated content)
+    try:
+        from core.analytics.backfill import BackfillMatcher
+        output_base = Path(output_base_dir) if output_base_dir else account_dir / "output"
+        if not output_base.exists():
+            output_base = account_dir / "output"
+
+        if output_base.exists():
+            matcher = BackfillMatcher(db=db, output_base=output_base)
+            matched = matcher.backfill_account(account_name)
+            visuals = matcher.backfill_visuals(account_name)
+            logger.info(f"   Backfilled: {matched} matched, {visuals} visual extractions")
+        else:
+            logger.info("   No output directory found — skipping backfill")
+    except Exception as e:
+        logger.warning(f"   Backfill failed (continuing anyway): {e}")
+
+    # Step 3: Refresh visual context
+    try:
+        from core.analytics.analyzer import AccountAnalyzer
+        analyzer = AccountAnalyzer(db=db)
+        context_path = account_dir / "performance_context.json"
+        insights = analyzer.refresh_context(account_name, context_path)
+        top_count = len(insights.get("top_performing", {}))
+        logger.info(f"   Refreshed visual context: {top_count} top attributes, sample_size={insights.get('sample_size', 0)}")
+    except Exception as e:
+        logger.warning(f"   Context refresh failed (continuing anyway): {e}")
+
+    db.close()
 
 
 def validate_args(args) -> list[str]:
@@ -206,7 +298,7 @@ Examples:
 
     # Load account config
     try:
-        account_config, account_dir = load_account_config(args.account)
+        account_config, account_dir, platform_profiles = load_account_config(args.account)
     except ValueError as e:
         print(f"❌ {e}", file=sys.stderr)
         sys.exit(1)
@@ -215,6 +307,12 @@ Examples:
     if not account_config.openrouter_api_key and not os.getenv("OPENROUTER_API_KEY"):
         print("❌ OPENROUTER_API_KEY not found in config or environment", file=sys.stderr)
         sys.exit(1)
+
+    # Auto-refresh data pipeline (scrape + backfill + context refresh if stale)
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / ".env")
+    ensure_fresh_data(args.account, account_dir, platform_profiles,
+                      output_base_dir=account_config.output_config.base_directory)
 
     # Print header
     print()

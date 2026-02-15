@@ -111,6 +111,57 @@ class BaseContentGenerator:
             max_history=account_config.topic_tracker_config.max_history
         )
 
+        # Load performance context for data-driven visual guidance
+        self.performance_context = None
+        self._current_explore_mode = False
+        context_path = Path(account_config.output_config.base_directory).parent / "performance_context.json"
+        if not context_path.exists() and scenes_path:
+            context_path = scenes_path.parent / "performance_context.json"
+        self._context_path = context_path
+        self._load_performance_context()
+
+    def _load_performance_context(self):
+        """Load performance context, auto-refreshing if stale (>1 day old)."""
+        from core.analytics.generator_integration import load_performance_context
+
+        ctx = load_performance_context(self._context_path)
+        if ctx:
+            # Check staleness
+            last_updated = ctx.get("last_updated", "")
+            try:
+                updated_date = datetime.strptime(last_updated, "%Y-%m-%d").date()
+                is_stale = (datetime.now().date() - updated_date).days > 1
+            except (ValueError, TypeError):
+                is_stale = True
+
+            if is_stale or ctx.get("visual_insights") is None:
+                # Auto-refresh if stale OR visual_insights are missing
+                self._auto_refresh_context()
+                ctx = load_performance_context(self._context_path)
+
+            self.performance_context = ctx
+        else:
+            logger.debug("No performance context found — visual guidance disabled")
+
+    def _auto_refresh_context(self):
+        """Auto-refresh performance context from database."""
+        try:
+            from core.analytics.db import AnalyticsDB
+            from core.analytics.analyzer import AccountAnalyzer
+
+            db_path = Path(__file__).parent.parent / "data" / "analytics.db"
+            if not db_path.exists():
+                logger.debug("Analytics DB not found — skipping auto-refresh")
+                return
+
+            db = AnalyticsDB(db_path)
+            analyzer = AccountAnalyzer(db=db)
+            analyzer.refresh_context(self.config.account_name, self._context_path)
+            logger.info("Auto-refreshed performance context (visual insights were missing)")
+            db.close()
+        except Exception as e:
+            logger.warning(f"Failed to auto-refresh performance context: {e}")
+
     def generate(
         self,
         topic: str = None,
@@ -132,6 +183,14 @@ class BaseContentGenerator:
         Returns:
             Dict with output_dir, slides, caption, and metadata
         """
+        # Auto-replenish explore topics if running low
+        if self.performance_context and self._context_path:
+            from core.analytics.generator_integration import replenish_explore_topics
+            added = replenish_explore_topics(self._context_path, self.llm)
+            if added > 0:
+                # Reload context with new topics
+                self._load_performance_context()
+
         # Generate random topic if requested
         if use_random:
             topic = self._generate_random_topic()
@@ -247,6 +306,8 @@ class BaseContentGenerator:
 
             for i, prompt in enumerate(image_prompts, 1):
                 logger.info(f"Generating slide {i}/{len(image_prompts)}...")
+                # Sanitize prompt before sending to Gemini (strip text refs, fix truncation)
+                prompt = self._sanitize_image_prompt(prompt)
                 full_prompt = f"{prompt}, vertical portrait format, 9:16 aspect ratio"
 
                 if i > 1:
@@ -849,6 +910,13 @@ class BaseContentGenerator:
         base_aesthetic = self.scenes["aesthetic_styles"][style]
         logger.info(f"🎨 Using {style} aesthetic style")
 
+        # Decide exploit vs explore mode for visual guidance
+        if self.performance_context and self.performance_context.get("visual_insights"):
+            from core.analytics.generator_integration import should_explore
+            self._current_explore_mode = should_explore(self.performance_context)
+            mode_label = "EXPLORE" if self._current_explore_mode else "EXPLOIT"
+            logger.info(f"📊 Visual guidance mode: {mode_label}")
+
         # Slide 1: Generate contextual hook image (not brand anchor)
         topic = content.get("topic", "routine")
         hook_text = content["slides"][0]["text"]
@@ -874,24 +942,44 @@ class BaseContentGenerator:
             # Get niche-specific context
             value_prop = self.config.brand_identity.value_proposition or "expert content"
 
-            system_prompt = f"""Generate a vivid, attention-grabbing scene description for a social media hook slide about {value_prop}.
+            # Build visual direction block from performance data
+            visual_direction = ""
+            if self.performance_context and self.performance_context.get("visual_insights"):
+                from core.analytics.generator_integration import (
+                    get_visual_guidance, get_explore_visual_guidance
+                )
+                if self._current_explore_mode:
+                    guidance = get_explore_visual_guidance(self.performance_context)
+                    if guidance:
+                        visual_direction = f"\n\nVISUAL DIRECTION (testing new approach): {guidance}"
+                else:
+                    guidance = get_visual_guidance(self.performance_context)
+                    if guidance:
+                        visual_direction = f"\n\nVISUAL DIRECTION (based on performance data): {guidance}"
+
+            system_prompt = f"""Generate a scene description for a social media hook slide about {value_prop}.
+
+TARGET AESTHETIC (your scene MUST match this style):
+{base_aesthetic}
 
 Requirements:
-- Scene MUST be set in the same environment/location as the topic. If about restaurants, show a restaurant. If about outdoor activities, show outdoors. If about kitchen activities, show a kitchen.
-- NEVER default to a nursery, crib, or sleeping baby unless the topic is specifically about sleep or bedtime.
-- Do NOT show a crib or sleeping baby for non-sleep topics.
-- Include pattern interrupt element (unexpected detail, dramatic lighting, bold composition)
-- Visual drama: use dramatic lighting, interesting angles, emotional moments
-- Stay authentic to the niche and topic
+- Scene MUST be set in the same environment/location as the topic
+- NEVER default to a nursery, crib, or sleeping baby unless the topic is specifically about sleep or bedtime
+- Cribs/bassinets ONLY in bedrooms or nurseries — NEVER in kitchens, living rooms, or other rooms
+- Only ONE baby/child in the scene — NEVER two children unless the topic is specifically about siblings
 - Children must be seated in chairs, high chairs, or on laps — NEVER sitting on tables or counters
+- Use interesting composition and angles to create visual interest
+- NO text, writing, labels, clocks, signs, or readable elements in the scene
+- NO books with visible pages, no screens with visible text, no written notes
+- Keep the scene warm, bright, and inviting — match the target aesthetic above
+- Write a COMPLETE scene description (finish your sentences){visual_direction}
 
-Return ONLY the scene description, no additional commentary."""
+Return ONLY the scene description (2-4 sentences), no additional commentary."""
 
             user_prompt = f"""Topic: {topic}
 Hook text: {hook_text}
-Niche: {value_prop}
 
-Generate a scene description that creates visual drama and matches this specific topic. The scene should be scroll-stopping and contextually relevant."""
+Generate a scene that matches this topic and the target aesthetic. Keep it simple, warm, and authentic."""
 
             # Call Claude API via LLM client
             scene_description = self.llm.chat_completion(
@@ -900,7 +988,7 @@ Generate a scene description that creates visual drama and matches this specific
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.7,
-                max_tokens=200
+                max_tokens=350
             )
             full_prompt = f"{scene_description}, {base_aesthetic}"
             logger.info(f"Generated contextual hook scene for '{topic}'")
@@ -943,6 +1031,21 @@ Generate a scene description that creates visual drama and matches this specific
                 # Fallback for unknown character types (backward compatibility)
                 character_section = f"- Character type: {character_type}"
 
+            # Build visual direction block from performance data
+            visual_direction = ""
+            if self.performance_context and self.performance_context.get("visual_insights"):
+                from core.analytics.generator_integration import (
+                    get_visual_guidance, get_explore_visual_guidance
+                )
+                if self._current_explore_mode:
+                    guidance = get_explore_visual_guidance(self.performance_context)
+                    if guidance:
+                        visual_direction = f"\n\nVISUAL DIRECTION (testing new approach): {guidance}"
+                else:
+                    guidance = get_visual_guidance(self.performance_context)
+                    if guidance:
+                        visual_direction = f"\n\nVISUAL DIRECTION (based on performance data): {guidance}"
+
             prompt = f"""Generate image prompts for a carousel about "{topic}" for {value_prop}.
 
 For each slide, create a visual scene that DIRECTLY MATCHES the content.
@@ -956,6 +1059,9 @@ REQUIREMENTS:
 - Keep scenes authentic, realistic, and on-brand
 - Focus on the SPECIFIC action/concept in each slide
 - The LAST slide is a CTA (save/share/comment) - make it a warm closing scene related to "{topic}" (e.g., parent looking at phone, cozy moment with child, or a flat lay of items from the topic). Do NOT default to a sleeping baby unless the topic is about sleep.
+- NO text, writing, labels, clocks, signs, book pages, or readable elements in any scene
+- Only ONE baby/child per scene — NEVER two children unless the topic is specifically about siblings
+- Cribs/bassinets ONLY in bedrooms — NEVER in kitchens, living rooms, or other rooms{visual_direction}
 
 CRITICAL - VISUAL CONSISTENCY:
 All scenes must maintain CONSISTENT visual style:
@@ -1003,7 +1109,14 @@ Generate {len(slides_text)} contextual scene descriptions:"""
             json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
             if json_match:
                 scene_prompts = json.loads(json_match.group())
-                full_prompts = [f"{p}, {base_aesthetic}" for p in scene_prompts]
+                # Append aesthetic only if Claude didn't already include it
+                aesthetic_snippet = base_aesthetic[:40]
+                full_prompts = []
+                for p in scene_prompts:
+                    if aesthetic_snippet in p:
+                        full_prompts.append(p)  # Already has aesthetic
+                    else:
+                        full_prompts.append(f"{p}, {base_aesthetic}")
                 logger.info(f"Generated {len(full_prompts)} contextual image prompts")
                 return full_prompts
             else:
@@ -1013,6 +1126,56 @@ Generate {len(slides_text)} contextual scene descriptions:"""
             logger.error(f"Failed to generate contextual prompts: {e}")
             logger.info("Falling back to keyword matching")
             return [self._match_scene_to_content(text) + f", {base_aesthetic}" for text in slides_text]
+
+    @staticmethod
+    def _sanitize_image_prompt(prompt: str) -> str:
+        """Clean up image prompt before sending to Gemini to prevent common issues."""
+        # 1. Truncate at last complete sentence if prompt was cut off mid-sentence
+        # Find the last period, exclamation, or closing quote before the aesthetic section
+        aesthetic_markers = ["Soft watercolor", "iPhone photo", "iphone photo"]
+        aesthetic_start = len(prompt)
+        for marker in aesthetic_markers:
+            idx = prompt.find(marker)
+            if idx > 0:
+                aesthetic_start = min(aesthetic_start, idx)
+
+        scene_part = prompt[:aesthetic_start].rstrip(", ")
+        aesthetic_part = prompt[aesthetic_start:]
+
+        # If scene part ends mid-sentence (no terminal punctuation), truncate to last complete sentence
+        if scene_part and scene_part[-1] not in '.!?"\'':
+            last_period = max(scene_part.rfind('.'), scene_part.rfind('!'), scene_part.rfind('"'))
+            if last_period > 0:
+                scene_part = scene_part[:last_period + 1]
+
+        # 2. Strip text/writing references that Gemini will render as gibberish
+        text_patterns = [
+            r'(?:visible|showing|reads?|displaying|with)\s+(?:on|the)\s+(?:a\s+)?(?:microwave|oven|clock|timer|screen|phone|label|sign|book|page|note|chart).*?(?:\.|,)',
+            r'times?\s+written\s+on\s+(?:masking\s+)?tape.*?(?:\.|,)',
+            r'(?:labeled|labelled)\s+bottles?.*?(?:\.|,)',
+            r'handwritten\s+(?:feeding\s+)?chart.*?(?:\.|,)',
+            r'\([^)]*visible[^)]*\)',  # (visible on microwave clock)
+            r'\d+:\d+\s*(?:AM|PM|am|pm)',  # Time references like "2:47 AM"
+        ]
+        for pattern in text_patterns:
+            scene_part = re.sub(pattern, '', scene_part, flags=re.IGNORECASE)
+
+        # 3. Remove references to multiple babies/children (unless "siblings" topic)
+        multi_child_patterns = [
+            r'two\s+(?:different\s+)?(?:babies|children|kids|toddlers)',
+            r'(?:babies|children|kids)\s+(?:sit|play|stand)\s+(?:on\s+)?(?:opposite|different)',
+        ]
+        for pattern in multi_child_patterns:
+            scene_part = re.sub(pattern, 'a child', scene_part, flags=re.IGNORECASE)
+
+        # 4. Clean up double spaces and dangling commas
+        scene_part = re.sub(r'\s+', ' ', scene_part)
+        scene_part = re.sub(r',\s*,', ',', scene_part)
+        scene_part = re.sub(r',\s*\.', '.', scene_part)
+        scene_part = scene_part.strip().rstrip(',').strip()
+
+        result = f"{scene_part}, {aesthetic_part}" if aesthetic_part else scene_part
+        return result
 
     def _match_scene_to_content(self, content_text: str) -> str:
         """Match content keywords to scene prompts (fallback)"""
@@ -1434,8 +1597,42 @@ Generate caption:"""
         return " ".join([f"#{tag}" for tag in all_tags])
 
     def _generate_random_topic(self) -> str:
-        """Generate random topic from content pillars"""
-        pillar = random.choice(self.config.content_pillars)
+        """Generate random topic from content pillars, guided by tier priorities.
+
+        Skips topics that appear in the last 5 generated topics to avoid repetition.
+        """
+        # Get last 5 topics to avoid repeating
+        recent_topics = set()
+        try:
+            for topic in self.topic_tracker.get_recent_topics(n=5):
+                recent_topics.add(topic.lower())
+        except Exception:
+            pass
+
+        max_attempts = 30
+
+        for attempt in range(max_attempts):
+            pillar = None
+
+            # Try tier-based selection if performance context exists
+            if self.performance_context:
+                from core.analytics.generator_integration import pick_pillar_by_tier
+                tier_pick = pick_pillar_by_tier(
+                    self.performance_context, self.config.content_pillars
+                )
+                if tier_pick:
+                    if tier_pick in self.config.content_pillars:
+                        pillar = tier_pick
+                    else:
+                        # Raw tier topic (e.g. from tier_3_explore) — use directly
+                        if tier_pick.lower() not in recent_topics:
+                            logger.info(f"📊 Tier-guided topic (explore): '{tier_pick}'")
+                            return tier_pick
+                        elif attempt < max_attempts - 1:
+                            continue
+
+            if not pillar:
+                pillar = random.choice(self.config.content_pillars)
 
         # Convert pillar to readable topic
         topic_map = {
@@ -1486,10 +1683,21 @@ Generate caption:"""
             "work_life_balance": "work-life balance with baby"
         }
 
-        return topic_map.get(pillar, pillar.replace('_', ' '))
+            topic = topic_map.get(pillar, pillar.replace('_', ' '))
+
+            if topic.lower() not in recent_topics:
+                return topic
+
+            # Topic was recent, retry
+            if attempt < max_attempts - 1:
+                continue
+
+        # Exhausted retries — use last generated topic anyway
+        logger.warning(f"⚠️  Could not find non-recent topic after {max_attempts} attempts, using '{topic}'")
+        return topic
 
     def _create_output_dir(self, topic: str) -> Path:
-        """Create output directory with date/topic structure"""
+        """Create output directory with date/topic structure, appending _v2 etc. if exists."""
         now = datetime.now()
         year = now.strftime("%Y")
         month = now.strftime("%m-%B").lower()
@@ -1498,8 +1706,20 @@ Generate caption:"""
         # Generate slug
         topic_slug = self.slug_generator.generate(topic)
 
-        # Build path
-        output_dir = Path(self.config.output_config.base_directory) / year / month / f"{date}_{topic_slug}"
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Build base path
+        base_dir = Path(self.config.output_config.base_directory) / year / month
+        output_dir = base_dir / f"{date}_{topic_slug}"
 
+        # If dir already has content (slides/), append _v2, _v3, etc.
+        if output_dir.exists() and any(output_dir.iterdir()):
+            version = 2
+            while True:
+                versioned_dir = base_dir / f"{date}_{topic_slug}_v{version}"
+                if not versioned_dir.exists() or not any(versioned_dir.iterdir()):
+                    output_dir = versioned_dir
+                    break
+                version += 1
+            logger.info(f"📁 Output dir existed, using {output_dir.name}")
+
+        output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir
