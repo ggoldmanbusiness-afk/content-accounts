@@ -1,3 +1,4 @@
+import json
 import pytest
 from core.analytics.db import AnalyticsDB
 from core.analytics.analyzer import AccountAnalyzer
@@ -119,3 +120,63 @@ class TestAccountAnalyzer:
         result = analyzer.analyze_hook_visuals("test")
         assert "composition" in result
         assert "closeup" in result["composition"]
+
+    def test_refresh_context_writes_visual_insights(self, db_with_data, tmp_path):
+        """refresh_context writes visual_insights and explore_targets to file."""
+        # Add visual data for multiple posts so we hit the min 2 threshold
+        for post_id in ["sg_0", "sg_1", "sg_2"]:
+            db_with_data.upsert_post_visuals(
+                post_id=post_id,
+                dominant={"photography_style": "iphone_authentic", "lighting": "golden_hour",
+                          "composition": "wide", "scene_setting": "outdoor",
+                          "subject_focus": "child_solo", "mood": "energetic"},
+                hook={"composition": "wide", "photography_style": "iphone_authentic",
+                      "lighting": "golden_hour", "mood": "energetic",
+                      "subject_focus": "child_solo"},
+                all_attributes={},
+            )
+
+        # One post with a different style (will be <2 so goes to explore_targets)
+        db_with_data.upsert_post_visuals(
+            post_id="sg_3",
+            dominant={"photography_style": "cinematic", "lighting": "moody",
+                      "composition": "closeup", "scene_setting": "bedroom",
+                      "subject_focus": "hands_detail", "mood": "warm_cozy"},
+            hook={"composition": "closeup", "photography_style": "cinematic",
+                  "lighting": "moody", "mood": "warm_cozy",
+                  "subject_focus": "hands_detail"},
+            all_attributes={},
+        )
+
+        context_path = tmp_path / "performance_context.json"
+        # Pre-populate with existing data to verify merge
+        context_path.write_text(json.dumps({"format_weights": {"habit_list": 1.5}, "sample_size": 10}))
+
+        analyzer = AccountAnalyzer(db=db_with_data)
+        result = analyzer.refresh_context("test", context_path)
+
+        # Verify return value
+        assert "top_performing" in result
+        assert result["top_performing"].get("photography_style") == "iphone_authentic"
+        assert result["top_performing"].get("lighting") == "golden_hour"
+
+        # Verify file was written and merged
+        written = json.loads(context_path.read_text())
+        assert "visual_insights" in written
+        assert "explore_targets" in written
+        assert "exploration_ratio" in written
+        assert "last_updated" in written
+        # Existing data preserved
+        assert written["format_weights"] == {"habit_list": 1.5}
+
+    def test_refresh_context_empty_visuals(self, db_with_data, tmp_path):
+        """refresh_context handles accounts with no visual data gracefully."""
+        context_path = tmp_path / "performance_context.json"
+        analyzer = AccountAnalyzer(db=db_with_data)
+        result = analyzer.refresh_context("test", context_path)
+
+        assert result["top_performing"] == {}
+        assert result["sample_size"] == 0
+
+        written = json.loads(context_path.read_text())
+        assert written["exploration_ratio"] == 0.40  # <20 posts default

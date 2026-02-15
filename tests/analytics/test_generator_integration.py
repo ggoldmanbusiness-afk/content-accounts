@@ -1,7 +1,10 @@
 import json
 import pytest
 from pathlib import Path
-from core.analytics.generator_integration import load_performance_context, weighted_format_choice
+from core.analytics.generator_integration import (
+    load_performance_context, weighted_format_choice,
+    get_visual_guidance, get_explore_visual_guidance, should_explore,
+)
 
 
 @pytest.fixture
@@ -37,3 +40,72 @@ def test_weighted_format_choice(context_file):
         counts[choice] = counts.get(choice, 0) + 1
     # step_guide (weight 1.5) should be chosen more than habit_list (weight 0.6)
     assert counts.get("step_guide", 0) > counts.get("habit_list", 0)
+
+
+@pytest.fixture
+def context_with_visuals():
+    return {
+        "visual_insights": {
+            "top_performing": {
+                "photography_style": "iphone_authentic",
+                "lighting": "golden_hour",
+                "composition": "wide",
+                "scene_setting": "outdoor",
+                "subject_focus": "child_solo",
+                "mood": "energetic",
+            },
+            "hook_recipe": {
+                "composition": "wide",
+                "photography_style": "iphone_authentic",
+                "lighting": "golden_hour",
+                "mood": "energetic",
+                "subject_focus": "child_solo",
+            },
+            "sample_size": 15,
+        },
+        "explore_targets": {
+            "photography_style": ["cinematic", "studio"],
+            "lighting": ["moody"],
+            "scene_setting": ["kitchen", "car"],
+        },
+        "exploration_ratio": 0.30,
+    }
+
+
+def test_get_visual_guidance(context_with_visuals):
+    result = get_visual_guidance(context_with_visuals)
+    assert result is not None
+    assert "Data shows best performance with:" in result
+    assert "golden hour" in result
+    assert "iphone authentic" in result
+
+
+def test_get_visual_guidance_empty():
+    assert get_visual_guidance({}) is None
+    assert get_visual_guidance({"visual_insights": {}}) is None
+
+
+def test_get_explore_visual_guidance(context_with_visuals):
+    result = get_explore_visual_guidance(context_with_visuals)
+    assert result is not None
+    assert "Testing new visual approach:" in result
+
+
+def test_get_explore_visual_guidance_empty():
+    assert get_explore_visual_guidance({}) is None
+    assert get_explore_visual_guidance({"explore_targets": {}}) is None
+
+
+def test_should_explore_respects_ratio():
+    # With ratio=1.0, should always explore
+    assert should_explore({"exploration_ratio": 1.0}) is True
+    # With ratio=0.0, should never explore
+    assert should_explore({"exploration_ratio": 0.0}) is False
+
+
+def test_should_explore_default_ratio():
+    """Without exploration_ratio, defaults to 0.40."""
+    # Run many times — with 0.40 ratio, should get some True and some False
+    results = [should_explore({}) for _ in range(100)]
+    assert any(results)  # At least one True
+    assert not all(results)  # At least one False

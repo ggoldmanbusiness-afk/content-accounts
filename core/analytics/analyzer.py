@@ -1,4 +1,7 @@
+import json
 import logging
+from datetime import datetime
+from pathlib import Path
 from typing import Optional
 from core.analytics.db import AnalyticsDB
 
@@ -334,6 +337,85 @@ class AccountAnalyzer:
             "visuals": self.analyze_visuals(account_name),
             "hook_visuals": self.analyze_hook_visuals(account_name),
         }
+
+    def refresh_context(self, account_name: str, context_path: Path) -> dict:
+        """Derive visual insights + explore targets from DB and write to performance_context.json.
+
+        Merges into existing context (preserves format_weights, pillar tiers, etc.).
+        Returns the visual_insights dict that was written.
+        """
+        visuals = self.analyze_visuals(account_name)
+        hook_visuals = self.analyze_hook_visuals(account_name)
+
+        # Determine total sample size from visual data
+        all_counts = []
+        for attr_data in visuals.values():
+            for val_data in attr_data.values():
+                all_counts.append(val_data["post_count"])
+        sample_size = max(all_counts) if all_counts else 0
+
+        # Pick top value per attribute (min 2 posts)
+        top_performing = {}
+        visual_attrs = [
+            "photography_style", "lighting", "color_palette",
+            "composition", "scene_setting", "subject_focus", "mood"
+        ]
+        for attr in visual_attrs:
+            attr_data = visuals.get(attr, {})
+            qualified = {v: d for v, d in attr_data.items() if d["post_count"] >= 2}
+            if qualified:
+                best = max(qualified.items(), key=lambda x: x[1]["avg_views"])
+                top_performing[attr] = best[0]
+
+        # Hook recipe — top value per hook attribute (min 2 posts)
+        hook_recipe = {}
+        for attr, attr_data in hook_visuals.items():
+            qualified = {v: d for v, d in attr_data.items() if d["post_count"] >= 2}
+            if qualified:
+                best = max(qualified.items(), key=lambda x: x[1]["avg_views"])
+                hook_recipe[attr] = best[0]
+
+        # Explore targets — attribute values with <2 posts (blind spots)
+        explore_targets = {}
+        for attr in visual_attrs:
+            attr_data = visuals.get(attr, {})
+            untested = [v for v, d in attr_data.items() if d["post_count"] < 2]
+            if untested:
+                explore_targets[attr] = untested
+
+        # Exploration ratio based on sample size
+        if sample_size < 20:
+            exploration_ratio = 0.40
+        elif sample_size <= 50:
+            exploration_ratio = 0.30
+        else:
+            exploration_ratio = 0.20
+
+        visual_insights = {
+            "top_performing": top_performing,
+            "hook_recipe": hook_recipe,
+            "sample_size": sample_size,
+        }
+
+        # Load existing context, merge, and write
+        existing = {}
+        if context_path.exists():
+            try:
+                existing = json.loads(context_path.read_text())
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        existing["visual_insights"] = visual_insights
+        existing["explore_targets"] = explore_targets
+        existing["exploration_ratio"] = exploration_ratio
+        existing["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+
+        context_path.write_text(json.dumps(existing, indent=2))
+        logger.info(f"Refreshed visual context for {account_name}: "
+                     f"{len(top_performing)} top attrs, {len(explore_targets)} explore targets, "
+                     f"ratio={exploration_ratio}")
+
+        return visual_insights
 
     def cross_account_report(self, account_names: list[str]) -> dict:
         """Cross-account comparison."""

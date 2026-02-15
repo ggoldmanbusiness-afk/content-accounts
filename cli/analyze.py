@@ -43,6 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--recommend", action="store_true", help="Generate new recommendations")
     parser.add_argument("--backfill-visuals", action="store_true",
                         help="Extract visual attributes for already-matched posts")
+    parser.add_argument("--refresh-context", action="store_true",
+                        help="Refresh visual insights in performance_context.json from analytics DB")
     return parser
 
 
@@ -226,6 +228,21 @@ def main():
         matcher = BackfillMatcher(db=db, output_base=output_base)
         count = matcher.backfill_visuals(args.account)
         console.print(f"[green]Extracted visual attributes for {count} posts[/green]")
+        return
+
+    if args.refresh_context:
+        if not args.account:
+            console.print("[yellow]Specify --account with --refresh-context[/yellow]")
+            return
+        analyzer = AccountAnalyzer(db=db)
+        context_path = ACCOUNTS_DIR / args.account / "performance_context.json"
+        insights = analyzer.refresh_context(args.account, context_path)
+        top = insights.get("top_performing", {})
+        console.print(f"[green]Refreshed visual context for {args.account}[/green]")
+        if top:
+            console.print(f"  Top performing: {', '.join(f'{k}={v}' for k, v in top.items())}")
+        console.print(f"  Sample size: {insights.get('sample_size', 0)}")
+        console.print(f"  Written to: {context_path}")
         return
 
     if args.dashboard:
