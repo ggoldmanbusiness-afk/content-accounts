@@ -1634,7 +1634,23 @@ Generate caption:"""
             if not pillar:
                 pillar = random.choice(self.config.content_pillars)
 
-        # Convert pillar to readable topic
+            # Convert pillar to readable topic
+            topic = self._pillar_to_topic(pillar)
+
+            if topic.lower() not in recent_topics:
+                return topic
+
+            # Topic was recent, retry
+            if attempt < max_attempts - 1:
+                continue
+
+        # Exhausted retries — use last generated topic anyway
+        logger.warning(f"⚠️  Could not find non-recent topic after {max_attempts} attempts, using '{topic}'")
+        return topic
+
+    @staticmethod
+    def _pillar_to_topic(pillar: str) -> str:
+        """Convert a content pillar slug to a readable topic string."""
         topic_map = {
             # Sleep
             "sleep_schedules_and_routines": "age-appropriate sleep schedules",
@@ -1682,19 +1698,7 @@ Generate caption:"""
             "partner_communication": "communicating with your partner",
             "work_life_balance": "work-life balance with baby"
         }
-
-            topic = topic_map.get(pillar, pillar.replace('_', ' '))
-
-            if topic.lower() not in recent_topics:
-                return topic
-
-            # Topic was recent, retry
-            if attempt < max_attempts - 1:
-                continue
-
-        # Exhausted retries — use last generated topic anyway
-        logger.warning(f"⚠️  Could not find non-recent topic after {max_attempts} attempts, using '{topic}'")
-        return topic
+        return topic_map.get(pillar, pillar.replace('_', ' '))
 
     def _create_output_dir(self, topic: str) -> Path:
         """Create output directory with date/topic structure, appending _v2 etc. if exists."""
