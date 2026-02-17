@@ -21,8 +21,10 @@ CTA_OPTIONS = [
 ]
 
 
-def _random_cta() -> str:
-    """Pick a random CTA for the final slide"""
+def _random_cta(content_templates: Optional[Dict] = None) -> str:
+    """Pick a random CTA for the final slide, preferring account-specific CTAs"""
+    if content_templates and "cta_examples" in content_templates:
+        return random.choice(content_templates["cta_examples"])
     return random.choice(CTA_OPTIONS)
 
 
@@ -185,7 +187,7 @@ tip 1: call early morning only
 7-8am catches decision makers before their inbox fills up. connect rate jumped from 12% to 31%.
 
 SLIDE {num_items + 2} (CTA):
-{_random_cta()}
+{_random_cta(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each tip with "tip 1:", "tip 2:", etc (this is NOT meta-text to skip)
@@ -265,7 +267,7 @@ step 1: start with research
 10 minutes of research saves hours of wasted effort. understanding the problem beats jumping to solutions.
 
 SLIDE {num_items + 2} (CTA):
-{_random_cta()}
+{_random_cta(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc (this is NOT meta-text to skip)
@@ -345,7 +347,7 @@ kitchen: safety essentials
 • stove knob covers before they climb
 
 SLIDE {num_categories + 2} (CTA):
-{_random_cta()}
+{_random_cta(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Each category starts with a label and colon
@@ -365,7 +367,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
     {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
     ...
-    {{"text": "{_random_cta()}"}}
+    {{"text": "{_random_cta(content_templates)}"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
 }}
@@ -420,7 +422,7 @@ habit 1: same wake time daily
 circadian rhythm needs consistency. their body learns to predict the day and cortisol regulation improves.
 
 SLIDE {num_habits + 2} (CTA):
-{_random_cta()}
+{_random_cta(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each habit with "habit 1:", "habit 2:", etc
@@ -437,7 +439,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "habit 1: [boring habit]\\n([reason])\\n\\n[1-2 sentences]"}},
     {{"text": "habit 2: ..."}},
     ...
-    {{"text": "{_random_cta()}"}}
+    {{"text": "{_random_cta(content_templates)}"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
 }}
@@ -492,7 +494,7 @@ step 1: start bedtime at same time
 their body learns when sleep is coming and melatonin production syncs up. yes it means weekends too.
 
 SLIDE {num_steps + 2} (CTA):
-{_random_cta()}
+{_random_cta(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc
@@ -512,7 +514,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "step 1: [action phrase]\\n([reason])\\n\\n[1-2 sentences]"}},
     {{"text": "step 2: ..."}},
     ...
-    {{"text": "{_random_cta()}"}}
+    {{"text": "{_random_cta(content_templates)}"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {outcome}]"
 }}

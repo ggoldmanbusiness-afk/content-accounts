@@ -144,6 +144,12 @@ class AccountConfig(BaseModel):
     # Hook formulas (optional)
     hook_formulas: List[str] = Field(default_factory=list, description="Custom hook templates")
 
+    # Caption CTA instruction (optional, injected into caption generation prompt)
+    caption_cta_instruction: str = Field(default="", description="Account-specific CTA instruction for captions")
+
+    # Caption CTA suffix (optional, appended if LLM doesn't include "link in bio")
+    caption_cta_suffix: str = Field(default="", description="Fallback CTA text appended to caption if link-in-bio missing")
+
     # Platform profiles for analytics scraping
     platform_profiles: Dict[str, str] = Field(
         default_factory=dict,

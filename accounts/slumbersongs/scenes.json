@@ -1,0 +1,41 @@
+{
+  "aesthetic_styles": {
+    "painterly": "Dreamy watercolor and gouache children's book illustration, warm muted pastel color palette with soft gold accents, warm intimate lighting, highly detailed textures, soft diffused glow, magical bedtime atmosphere, NO visible text/letters/words/writing",
+    "iphone_photo": "Soft cozy nursery scene, warm lamplight, peaceful atmosphere, plush toys, moonlight through window, cream and lavender tones, intimate and magical, authentic parenting moment, NO visible text/letters/words/writing",
+    "painterly_v2": "Soft watercolor illustration, warm cream lavender and gold palette, light airy atmosphere, gentle moonlight, soft pastel tones, cozy and inviting, delicate brushstrokes, magical bedtime feel, NOT dark, NOT moody, warm golden highlights, intimate tender moment, NO visible text/letters/words/writing, single continuous scene filling entire frame",
+    "iphone_photo_v2": "iPhone photo, parent and baby, simple composition with single focal point, soft warm nursery lighting, cream and lavender tones, slightly grainy, cozy real home, one clear scene per image, authentic bedtime moment, NO visible text/letters/words/writing, single continuous scene filling entire frame"
+  },
+
+  "brand_anchor": {
+    "painterly": "Dreamy watercolor illustration of a sleepy animal character gently rocking a baby in a cozy nursery, golden stars floating above, warm muted pastels - lavender, cream, soft gold, moonlight through round window, magical bedtime atmosphere, NO visible text/letters/words",
+    "iphone_photo": "iPhone photo of peaceful sleeping baby in cozy nursery, soft moonlight filtering through curtains, authentic candid moment, warm pastel tones, real parenting moment, NO visible text",
+    "description": "Primary brand visual - used for hook slides"
+  },
+
+  "scenes": {
+    "peaceful_sleeping": {
+      "prompt": "Baby peacefully sleeping in nursery, soft moonlight, magical atmosphere, floating golden stars, warm pastel tones, dreamy and cozy",
+      "keywords": ["sleep", "bedtime", "night", "nap", "rest", "lullaby"]
+    },
+    "bedtime_routine": {
+      "prompt": "Parent and baby in cozy bedtime routine, warm lamplight, rocking chair, story time, peaceful nursery, magical golden hour feel",
+      "keywords": ["routine", "bedtime", "story", "book", "reading", "rocking"]
+    },
+    "music_moment": {
+      "prompt": "Musical notes floating through a dreamy nursery, baby listening peacefully, warm golden light, magical atmosphere, soft instruments",
+      "keywords": ["music", "lullaby", "song", "singing", "melody", "sound"]
+    },
+    "nursery_ambiance": {
+      "prompt": "Beautiful cozy nursery with soft lighting, moon mobile, star projector, warm blankets, magical atmosphere, lavender and cream tones",
+      "keywords": ["nursery", "room", "setup", "vibes", "ambiance", "decor"]
+    },
+    "parent_connection": {
+      "prompt": "Parent holding baby close, tender moment, soft warm lighting, peaceful expression, intimate connection, dreamy atmosphere",
+      "keywords": ["parent", "love", "bond", "comfort", "hold", "connection"]
+    },
+    "morning_wake": {
+      "prompt": "Baby waking up happy in nursery, soft morning sunlight, peaceful start to day, warm golden tones, cozy atmosphere",
+      "keywords": ["wake", "morning", "sunrise", "new day", "happy"]
+    }
+  }
+}

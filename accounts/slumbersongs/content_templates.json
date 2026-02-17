@@ -1,0 +1,88 @@
+{
+  "style_guidelines": {
+    "tone": "warm, magical, parent-friendly",
+    "voice": "like a cozy bedtime chat with your best mom friend",
+    "conversational_elements": [
+      "honestly",
+      "game changer",
+      "trust me",
+      "worth every second",
+      "this one hit different",
+      "no judgment here",
+      "you're doing amazing"
+    ],
+    "examples": {
+      "bad_clinical": "Studies demonstrate that personalized auditory stimuli improve infant sleep outcomes",
+      "good_conversational": "turns out babies literally calm down faster when they hear their own name in a song (the science is wild)"
+    }
+  },
+  "formats": {
+    "habit_list": {
+      "description": "List of actionable tips/habits (hook + tips + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "tip", "position": "2-N", "max_words": 20},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a save-worthy carousel about {topic} for parents of babies and toddlers.\n\nFormat: habit_list\nSlides: {slide_count}\n\nBrand: SlumberSongs — personalized custom lullabies for babies\nBrand voice: {voice}\nTone: Warm, magical, supportive — like chatting with a best friend who happens to know sleep science\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{tip_end}: Individual actionable tips (max 20 words each)\n- Slide {last} (CTA): Call to action that mentions slumbersongs.com or 'link in bio' — encourage saves AND visiting the site. Example: 'save this for tonight — get a lullaby with their name at slumbersongs.com'\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"tip text\", \"type\": \"tip\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text mentioning slumbersongs.com or link in bio\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"2-3 casual sentences about the topic. End with 'link in bio' or 'slumbersongs.com' before hashtags. Then {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Warm, supportive, evidence-backed advice\n- No sensitive/controversial language\n- Hook score: min 12/20\n- Focus on save-worthy content\n- IMPORTANT: Last slide CTA MUST mention slumbersongs.com or 'link in bio'\n- IMPORTANT: Caption MUST include 'link in bio' before hashtags"
+    },
+    "step_guide": {
+      "description": "Numbered step-by-step guide (hook + steps + CTA)",
+      "structure": [
+        {"type": "hook", "position": 1, "max_words": 20},
+        {"type": "step", "position": "2-N", "max_words": 20, "numbered": true},
+        {"type": "cta", "position": "last", "max_words": 15}
+      ],
+      "prompt_template": "Generate a step-by-step guide carousel about {topic} for parents of babies and toddlers.\n\nFormat: step_guide\nSteps: {step_count}\n\nBrand: SlumberSongs — personalized custom lullabies for babies\nBrand voice: {voice}\nTone: Warm, magical, supportive\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words)\n- Slides 2-{step_end}: Numbered steps (max 20 words each)\n- Slide {last} (CTA): Call to action that mentions slumbersongs.com or 'link in bio' — encourage saves AND visiting the site\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"Step 1: action text\", \"type\": \"step\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text mentioning slumbersongs.com or link in bio\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"2-3 casual sentences about the topic. End with 'link in bio' or 'slumbersongs.com' before hashtags. Then {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Number each step clearly\n- Warm, supportive tone\n- Hook score: min 12/20\n- IMPORTANT: Last slide CTA MUST mention slumbersongs.com or 'link in bio'\n- IMPORTANT: Caption MUST include 'link in bio' before hashtags"
+    }
+  },
+  "hook_examples": {
+    "number_formula": [
+      "5 bedtime tricks that actually work (from a sleep-deprived mama)",
+      "3 things I changed that made bedtime magical",
+      "7 lullaby facts that will blow your mind"
+    ],
+    "transformation": [
+      "The one thing that turned bedtime from chaos to calm",
+      "What happened when we added a lullaby with her name in it"
+    ],
+    "wish_i_knew": [
+      "What I wish I knew about baby sleep before month 4",
+      "The bedtime hack every new parent deserves to know"
+    ]
+  },
+  "scoring_references": {
+    "curiosity_gap": [
+      "what actually happens in your baby's brain when they hear their name",
+      "the real reason your baby fights sleep (it's not what you think)",
+      "why the most popular baby names of 2025 sound completely different",
+      "what nobody tells you about the 4-month sleep regression"
+    ],
+    "actionability": [
+      "the exact bedtime routine that works for 6-month-olds",
+      "5 things to try tonight when nothing else works",
+      "how to create a sleep playlist that actually helps",
+      "the 2-minute trick that makes bedtime fights disappear"
+    ],
+    "specificity": [
+      "3 signs your baby is ready to drop a nap",
+      "the one sound frequency that calms babies fastest",
+      "5 nursery tweaks that improved our baby's sleep by 2 hours",
+      "why babies named Olivia are the most popular for the 5th year running"
+    ],
+    "scroll_stop": [
+      "stop playing white noise - try this instead",
+      "the boring bedtime habit that changed everything",
+      "I stopped fighting bedtime and did this instead",
+      "your baby doesn't need silence to sleep - they need this"
+    ]
+  },
+  "cta_examples": [
+    "Save this for tonight 💛 Get a lullaby with their name — slumbersongs.com",
+    "Tag a tired mama who needs this 🌙 link in bio for your own lullaby",
+    "Save this + get a personalized lullaby at slumbersongs.com",
+    "Share with a new parent 💛 Custom lullabies — link in bio",
+    "Save this for the next sleep regression 🌙 slumbersongs.com",
+    "Try this tonight — and get their own lullaby at slumbersongs.com"
+  ]
+}

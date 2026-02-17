@@ -86,7 +86,9 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path, Optiona
             claude_model=config_module.CLAUDE_MODEL,
             hook_formulas=getattr(config_module, 'HOOK_FORMULAS', []),
             openrouter_api_key=getattr(config_module, 'OPENROUTER_API_KEY', None),
-            gemini_api_key=getattr(config_module, 'GEMINI_API_KEY', None)
+            gemini_api_key=getattr(config_module, 'GEMINI_API_KEY', None),
+            caption_cta_instruction=getattr(config_module, 'CAPTION_CTA_INSTRUCTION', ''),
+            caption_cta_suffix=getattr(config_module, 'CAPTION_CTA_SUFFIX', '')
         )
 
         return account_config, account_dir, platform_profiles

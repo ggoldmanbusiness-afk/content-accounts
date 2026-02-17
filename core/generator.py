@@ -794,7 +794,7 @@ class BaseContentGenerator:
                 slides.append({"text": f"tip {len(slides)}\n\nexplanation here"})
             else:
                 from core.prompts import _random_cta
-                slides.append({"text": _random_cta()})
+                slides.append({"text": _random_cta(self.content_templates)})
 
         return {
             "slides": slides[:target_slides],
@@ -1514,6 +1514,9 @@ Generate {len(slides_text)} contextual scene descriptions:"""
             # Get topic for keyword-rich caption
             topic = content.get("topic", "parenting tips")
 
+            # Get account-specific CTA instruction if configured
+            caption_cta_instruction = getattr(self.config, 'caption_cta_instruction', '')
+
             # Generate contextual caption (200-400 chars for TikTok SEO)
             prompt = f"""Generate a TikTok caption for this parenting carousel about "{topic}".
 
@@ -1525,12 +1528,16 @@ TIPS INCLUDED:
 
 REQUIREMENTS:
 - 200-400 characters total (this is CRITICAL for TikTok search discovery)
-- Format: [Hook sentence that creates curiosity] + [1-2 sentences of context with keywords related to "{topic}"] + [CTA question to drive comments]
+- Format: [Hook sentence] + [1-2 context sentences with keywords] + [CTA question to drive comments]
 - Casual, relatable tone - like texting a mom friend
 - Include topic-relevant keywords naturally (TikTok search reads captions)
 - NO hashtags (those come separately)
 - NO emojis
 - Lowercase style preferred
+{caption_cta_instruction}
+
+CAPTION FORMAT (follow this structure exactly):
+[curiosity hook sentence]. [1-2 context sentences with topic keywords]. [link in bio mention if applicable]. [CTA question]
 
 EXAMPLES:
 - "the frozen washcloth trick sounds too simple but it changed everything for us during teething. most parents don't realize timing matters more than the method itself. which tip are you trying tonight?"
@@ -1543,6 +1550,11 @@ Generate caption:"""
                 temperature=0.7,
                 max_tokens=150
             ).strip('"\'')
+
+            # Append link-in-bio if account requires it and LLM didn't include it
+            caption_cta_suffix = getattr(self.config, 'caption_cta_suffix', '')
+            if caption_cta_suffix and 'link in bio' not in caption_text.lower():
+                caption_text = f"{caption_text}\n\n{caption_cta_suffix}"
 
             # Build topic-aware hashtags
             hashtags = self._build_topic_hashtags(topic)

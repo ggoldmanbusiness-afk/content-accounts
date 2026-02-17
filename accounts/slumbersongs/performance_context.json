@@ -1,0 +1,34 @@
+{
+  "sample_size": 0,
+  "format_weights": {},
+  "top_pillars": [],
+  "underperforming_pillars": [],
+  "optimal_slide_count": 5,
+  "hook_insights": {
+    "reference_hooks": []
+  },
+  "pillar_priority_tiers": {
+    "tier_1_proven": [],
+    "tier_2_promising": [],
+    "tier_3_explore": [
+      "lullaby_benefits",
+      "baby_sleep_science",
+      "baby_name_trends",
+      "bedtime_routines",
+      "personalization_power",
+      "parent_self_care",
+      "nursery_vibes",
+      "baby_milestones_sleep",
+      "music_and_development",
+      "newborn_survival"
+    ]
+  },
+  "exploration_ratio": 0.4,
+  "visual_insights": {
+    "top_performing": {},
+    "hook_recipe": {},
+    "sample_size": 0
+  },
+  "explore_targets": {},
+  "last_updated": "2026-02-17"
+}
