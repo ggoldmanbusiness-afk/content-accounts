@@ -51,7 +51,7 @@ class BaseContentGenerator:
         }
     }
 
-    def __init__(self, account_config: AccountConfig, scenes_path: Optional[Path] = None, content_templates_path: Optional[Path] = None):
+    def __init__(self, account_config: AccountConfig, scenes_path: Optional[Path] = None, content_templates_path: Optional[Path] = None, account_dir: Optional[Path] = None):
         """
         Initialize content generator
 
@@ -59,8 +59,10 @@ class BaseContentGenerator:
             account_config: Validated AccountConfig instance
             scenes_path: Optional path to scenes.json (defaults to account directory)
             content_templates_path: Optional path to content_templates.json
+            account_dir: Optional path to account directory (for qa_learnings.json)
         """
         self.config = account_config
+        self._account_dir = account_dir
 
         # API keys (from config or environment)
         openrouter_key = account_config.openrouter_api_key or os.getenv("OPENROUTER_API_KEY")
@@ -232,15 +234,26 @@ class BaseContentGenerator:
         logger.info(f"Generating {content_format} carousel about: {topic}")
         logger.info(f"Hook strategy: {hook_strategy}, Items: {num_items}")
 
-        # Check for duplicate topic
+        # Check for duplicate topic — reroll if random, warn if user-specified
         is_duplicate, similar_topic = self.topic_tracker.is_topic_too_similar(
             topic,
             similarity_threshold=self.config.topic_tracker_config.similarity_threshold
         )
 
-        if is_duplicate:
-            logger.warning(f"⚠️  Topic similar to recent: '{similar_topic}'")
-            logger.warning(f"Proceeding anyway, but content may be repetitive")
+        if is_duplicate and use_random:
+            for _reroll in range(10):
+                topic = self._generate_random_topic()
+                is_dup, sim = self.topic_tracker.is_topic_too_similar(
+                    topic,
+                    similarity_threshold=self.config.topic_tracker_config.similarity_threshold
+                )
+                if not is_dup:
+                    logger.info(f"🔄 Rerolled to avoid duplicate → '{topic}'")
+                    break
+            else:
+                logger.warning(f"⚠️  Could not find non-duplicate topic after 10 rerolls")
+        elif is_duplicate:
+            logger.warning(f"⚠️  Topic similar to recent: '{similar_topic}' — proceeding (user-specified)")
 
         # 1. Generate content using Claude (with viral hook scoring)
         content = self._generate_content_with_claude(
@@ -410,9 +423,32 @@ class BaseContentGenerator:
         # Track topic
         self.topic_tracker.add_topic(topic, str(output_dir))
 
+        # 9. Run programmatic QA checks
+        from core.qa_checker import CarouselQAChecker
+        learnings_path = (self._account_dir / "qa_learnings.json") if self._account_dir else None
+        qa_checker = CarouselQAChecker(
+            qa_config=self.config.qa_config,
+            learnings_path=learnings_path,
+        )
+        qa_report = qa_checker.check(output_dir, image_qa=False)
+
+        # Log QA warnings
+        fail_count = qa_report["summary"]["fail"]
+        warn_count = qa_report["summary"]["warn"]
+        if fail_count:
+            logger.warning(f"⚠️  QA: {fail_count} check(s) FAILED")
+            for name, result in qa_report["checks"].items():
+                if result["status"] == "fail":
+                    logger.warning(f"   ❌ {name}: {result['message']}")
+        if warn_count:
+            for name, result in qa_report["checks"].items():
+                if result["status"] == "warn":
+                    logger.info(f"   ⚠️  {name}: {result['message']}")
+
         logger.info(f"✅ Carousel created: {output_dir}")
         logger.info(f"   Slides: {num_slides}")
         logger.info(f"   Caption: {caption_path}")
+        logger.info(f"   QA: {qa_report['summary']['pass']} pass, {fail_count} fail, {warn_count} warn")
 
         return {
             "output_dir": str(output_dir),
@@ -420,7 +456,8 @@ class BaseContentGenerator:
             "num_slides": num_slides,
             "slides": [str(slides_dir / f"slide_{i:02d}.png") for i in range(1, num_slides + 1)],
             "caption": caption,
-            "meta": meta
+            "meta": meta,
+            "qa_report": qa_report
         }
 
     def _generate_content_with_claude(
@@ -635,6 +672,12 @@ class BaseContentGenerator:
         content_text = content_text.replace('---', '')  # Remove separator lines
         content_text = re.sub(r'^#\s+.*$', '', content_text, flags=re.MULTILINE)  # Remove any line starting with #
         content_text = re.sub(r'^\*\*:\*\*\s*$', '', content_text, flags=re.MULTILINE)  # Remove leftover **:**
+        # Remove structural labels that LLM sometimes outputs as slide content
+        content_text = re.sub(r'^\s*HOOK:\s*$', '', content_text, flags=re.MULTILINE | re.IGNORECASE)
+        content_text = re.sub(r'^\s*TIP SLIDES?:\s*$', '', content_text, flags=re.MULTILINE | re.IGNORECASE)
+        content_text = re.sub(r'^\s*CTA SLIDE?:\s*$', '', content_text, flags=re.MULTILINE | re.IGNORECASE)
+        content_text = re.sub(r'^\s*CAPTION:\s*$', '', content_text, flags=re.MULTILINE | re.IGNORECASE)
+        content_text = re.sub(r'^\s*FINAL SLIDE:\s*$', '', content_text, flags=re.MULTILINE | re.IGNORECASE)
 
         lines = content_text.strip().split('\n')
 
@@ -942,20 +985,32 @@ class BaseContentGenerator:
             # Get niche-specific context
             value_prop = self.config.brand_identity.value_proposition or "expert content"
 
-            # Build visual direction block from performance data
+            # Build visual direction block from performance data — use hook_recipe for hook slides
             visual_direction = ""
             if self.performance_context and self.performance_context.get("visual_insights"):
                 from core.analytics.generator_integration import (
-                    get_visual_guidance, get_explore_visual_guidance
+                    get_hook_visual_guidance, get_explore_visual_guidance
                 )
                 if self._current_explore_mode:
                     guidance = get_explore_visual_guidance(self.performance_context)
                     if guidance:
                         visual_direction = f"\n\nVISUAL DIRECTION (testing new approach): {guidance}"
                 else:
-                    guidance = get_visual_guidance(self.performance_context)
+                    guidance = get_hook_visual_guidance(self.performance_context)
                     if guidance:
                         visual_direction = f"\n\nVISUAL DIRECTION (based on performance data): {guidance}"
+
+            # Append learnings from qa_learnings.json
+            learnings_block = ""
+            if self._account_dir:
+                try:
+                    from core.qa_learnings import load_learnings
+                    learnings = load_learnings(self._account_dir)
+                    if learnings:
+                        lines = [f"- {l['description']}" for l in learnings]
+                        learnings_block = "\n\nPAST ISSUES TO AVOID:\n" + "\n".join(lines)
+                except Exception:
+                    pass
 
             system_prompt = f"""Generate a scene description for a social media hook slide about {value_prop}.
 
@@ -972,7 +1027,7 @@ Requirements:
 - NO text, writing, labels, clocks, signs, or readable elements in the scene
 - NO books with visible pages, no screens with visible text, no written notes
 - Keep the scene warm, bright, and inviting — match the target aesthetic above
-- Write a COMPLETE scene description (finish your sentences){visual_direction}
+- Write a COMPLETE scene description (finish your sentences){visual_direction}{learnings_block}
 
 Return ONLY the scene description (2-4 sentences), no additional commentary."""
 
@@ -1046,6 +1101,18 @@ Generate a scene that matches this topic and the target aesthetic. Keep it simpl
                     if guidance:
                         visual_direction = f"\n\nVISUAL DIRECTION (based on performance data): {guidance}"
 
+            # Append learnings from qa_learnings.json
+            learnings_block = ""
+            if self._account_dir:
+                try:
+                    from core.qa_learnings import load_learnings
+                    learnings = load_learnings(self._account_dir)
+                    if learnings:
+                        lines = [f"- {l['description']}" for l in learnings]
+                        learnings_block = "\n\nPAST ISSUES TO AVOID:\n" + "\n".join(lines)
+                except Exception:
+                    pass
+
             prompt = f"""Generate image prompts for a carousel about "{topic}" for {value_prop}.
 
 For each slide, create a visual scene that DIRECTLY MATCHES the content.
@@ -1061,7 +1128,7 @@ REQUIREMENTS:
 - The LAST slide is a CTA (save/share/comment) - make it a warm closing scene related to "{topic}" (e.g., parent looking at phone, cozy moment with child, or a flat lay of items from the topic). Do NOT default to a sleeping baby unless the topic is about sleep.
 - NO text, writing, labels, clocks, signs, book pages, or readable elements in any scene
 - Only ONE baby/child per scene — NEVER two children unless the topic is specifically about siblings
-- Cribs/bassinets ONLY in bedrooms — NEVER in kitchens, living rooms, or other rooms{visual_direction}
+- Cribs/bassinets ONLY in bedrooms — NEVER in kitchens, living rooms, or other rooms{visual_direction}{learnings_block}
 
 CRITICAL - VISUAL CONSISTENCY:
 All scenes must maintain CONSISTENT visual style:
@@ -1611,12 +1678,12 @@ Generate caption:"""
     def _generate_random_topic(self) -> str:
         """Generate random topic from content pillars, guided by tier priorities.
 
-        Skips topics that appear in the last 5 generated topics to avoid repetition.
+        Skips topics that appear in the last 10 generated topics to avoid repetition.
         """
-        # Get last 5 topics to avoid repeating
+        # Get last 10 topics (full history window) to avoid repeating
         recent_topics = set()
         try:
-            for topic in self.topic_tracker.get_recent_topics(n=5):
+            for topic in self.topic_tracker.get_recent_topics(n=10):
                 recent_topics.add(topic.lower())
         except Exception:
             pass

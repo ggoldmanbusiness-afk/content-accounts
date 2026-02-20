@@ -88,7 +88,8 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path, Optiona
             openrouter_api_key=getattr(config_module, 'OPENROUTER_API_KEY', None),
             gemini_api_key=getattr(config_module, 'GEMINI_API_KEY', None),
             caption_cta_instruction=getattr(config_module, 'CAPTION_CTA_INSTRUCTION', ''),
-            caption_cta_suffix=getattr(config_module, 'CAPTION_CTA_SUFFIX', '')
+            caption_cta_suffix=getattr(config_module, 'CAPTION_CTA_SUFFIX', ''),
+            qa_config=getattr(config_module, 'QA_RULES', {}),
         )
 
         return account_config, account_dir, platform_profiles
@@ -286,6 +287,12 @@ Examples:
         help='Enable verbose logging'
     )
 
+    parser.add_argument(
+        '--qa',
+        action='store_true',
+        help='Run LLM image QA checks after generation (~$0.10/carousel)'
+    )
+
     args = parser.parse_args()
 
     # Setup
@@ -329,7 +336,8 @@ Examples:
     generator = BaseContentGenerator(
         account_config=account_config,
         scenes_path=scenes_path if scenes_path.exists() else None,
-        content_templates_path=content_templates_path if content_templates_path.exists() else None
+        content_templates_path=content_templates_path if content_templates_path.exists() else None,
+        account_dir=account_dir,
     )
 
     # Set style override if specified
@@ -338,6 +346,7 @@ Examples:
 
     # Generate carousel(s)
     output_dirs = []
+    qa_reports = []
 
     for i in range(args.count):
         try:
@@ -353,6 +362,18 @@ Examples:
             )
 
             output_dirs.append(Path(result["output_dir"]))
+
+            # Run LLM image QA if --qa flag set
+            if args.qa:
+                from core.qa_checker import CarouselQAChecker
+                qa_checker = CarouselQAChecker(
+                    qa_config=account_config.qa_config,
+                    learnings_path=account_dir / "qa_learnings.json",
+                )
+                qa_report = qa_checker.check(result["output_dir"], image_qa=True)
+                qa_reports.append(qa_report)
+            elif "qa_report" in result:
+                qa_reports.append(result["qa_report"])
 
         except Exception as e:
             print(f"❌ Failed to generate carousel: {e}", file=sys.stderr)
@@ -384,6 +405,42 @@ Examples:
             print(f"   Slides: {slide_count} images")
 
         print()
+
+    # QA batch summary table
+    if qa_reports:
+        print("=" * 70)
+        print("  QA Summary")
+        print("=" * 70)
+
+        for i, report in enumerate(qa_reports, 1):
+            s = report["summary"]
+            fails = [
+                f"{name}: {r['message']}"
+                for name, r in report["checks"].items()
+                if r["status"] == "fail"
+            ]
+            status_str = "✅ CLEAN" if s["fail"] == 0 else f"❌ {s['fail']} FAIL"
+            print(f"  {i}. {status_str}  ({s['pass']}P/{s['fail']}F/{s['warn']}W)")
+            for fail in fails:
+                print(f"     → {fail}")
+
+        total_fail = sum(r["summary"]["fail"] for r in qa_reports)
+        clean = sum(1 for r in qa_reports if r["summary"]["fail"] == 0)
+        print()
+        print(f"  {clean}/{len(qa_reports)} carousels clean, {total_fail} total failures")
+        print()
+
+    # Post-generation feedback prompt (when --qa flag set)
+    if args.qa and sys.stdin.isatty():
+        from core.qa_learnings import add_learning, VALID_CATEGORIES
+        categories_str = "/".join(sorted(VALID_CATEGORIES))
+        while True:
+            issue = input("Flag any issues? (enter to skip): ").strip()
+            if not issue:
+                break
+            category = input(f"Category [{categories_str}]: ").strip() or "other"
+            add_learning(account_dir, category=category, description=issue)
+            print(f"  Learning saved to {account_dir.name}/qa_learnings.json")
 
     print("=" * 70)
     print()

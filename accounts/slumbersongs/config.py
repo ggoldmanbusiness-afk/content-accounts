@@ -116,7 +116,7 @@ CLAUDE_MODEL = "anthropic/claude-sonnet-4.5"
 
 # Topic Tracking
 TOPIC_TRACKER_CONFIG = {
-    "max_history": 10,
+    "max_history": 15,
     "similarity_threshold": 0.6
 }
 
@@ -127,6 +127,12 @@ HOOK_FORMULAS = [
     "What I wish I knew about [topic]",
     "This [expert] told me about [tip]"
 ]
+
+# QA Rules (per-account)
+QA_RULES = {
+    "caption_must_contain": ["link in bio"],
+    "image_qa_prompt": "Check for: child count (should be 1 unless topic involves siblings), nursery/sleep scenes are cozy and safe, no cribs in non-bedroom rooms, musical/lullaby elements where appropriate.",
+}
 
 # Platform profiles for analytics scraping
 PLATFORM_PROFILES = {

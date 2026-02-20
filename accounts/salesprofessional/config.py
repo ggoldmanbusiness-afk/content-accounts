@@ -152,8 +152,14 @@ CLAUDE_MODEL = "anthropic/claude-sonnet-4.5"
 
 # Topic Tracking
 TOPIC_TRACKER_CONFIG = {
-    "max_history": 10,
+    "max_history": 15,
     "similarity_threshold": 0.6
+}
+
+# QA Rules (per-account)
+QA_RULES = {
+    "hook_max_words": 18,
+    "image_qa_prompt": "Check for: professional attire and settings, no casual/home environments for business content, clean modern aesthetics, no distracting backgrounds.",
 }
 
 # Hook Formulas (sales-focused)

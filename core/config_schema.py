@@ -3,7 +3,7 @@ Pydantic Configuration Schema
 Validates account configurations with type safety
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -78,6 +78,16 @@ class OutputConfig(BaseModel):
         return v
 
 
+class QAConfig(BaseModel):
+    """Per-account QA rules"""
+    caption_must_contain: List[str] = Field(default_factory=list, description="Phrases required in captions")
+    caption_must_not_contain: List[str] = Field(default_factory=list, description="Phrases forbidden in captions")
+    forbidden_slide_words: List[str] = Field(default_factory=list, description="Words forbidden in slide text")
+    hook_max_words: Optional[int] = Field(default=None, description="Override default 20 word hook limit")
+    caption_length_range: Optional[Tuple[int, int]] = Field(default=None, description="Override default (200, 500) range")
+    image_qa_prompt: Optional[str] = Field(default=None, description="Custom LLM vision prompt replacing generic one")
+
+
 class TopicTrackerConfig(BaseModel):
     """Topic tracking configuration"""
     max_history: int = Field(default=10, ge=1, le=100, description="Max topics to track")
@@ -126,6 +136,9 @@ class AccountConfig(BaseModel):
 
     # Quality
     quality_overrides: QualityOverrides = Field(default_factory=QualityOverrides)
+
+    # QA Rules (per-account)
+    qa_config: QAConfig = Field(default_factory=QAConfig)
 
     # Output
     output_config: OutputConfig

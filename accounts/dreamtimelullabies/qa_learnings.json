@@ -1,0 +1,30 @@
+[
+  {
+    "category": "child_count",
+    "description": "Two babies appearing in scene - one held by parent and one in crib simultaneously",
+    "carousel_dir": "output/2026/02-february/2026-02-20_gentle-sleep-training-methods",
+    "slide_num": 4,
+    "timestamp": "2026-02-20T15:13:52"
+  },
+  {
+    "category": "child_count",
+    "description": "Multiple children appearing in sleep/bedtime scenes when only one should be present",
+    "carousel_dir": "output/2026/02-february/2026-02-20_age-appropriate-sleep-schedules",
+    "slide_num": 5,
+    "timestamp": "2026-02-20T15:13:52"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib visible in non-bedroom setting during breastfeeding scene",
+    "carousel_dir": "output/2026/02-february/2026-02-20_breastfeeding-tips-for-new-moms",
+    "slide_num": 5,
+    "timestamp": "2026-02-20T15:13:52"
+  },
+  {
+    "category": "child_count",
+    "description": "Mother breastfeeding one baby while second baby visible in crib behind her",
+    "carousel_dir": "output/2026/02-february/2026-02-20_breastfeeding-tips-for-new-moms",
+    "slide_num": 5,
+    "timestamp": "2026-02-20T15:14:42"
+  }
+]
