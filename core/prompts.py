@@ -28,6 +28,24 @@ def _random_cta(content_templates: Optional[Dict] = None) -> str:
     return random.choice(CTA_OPTIONS)
 
 
+def _cta_instruction(content_templates: Optional[Dict] = None) -> str:
+    """Build an instruction for the LLM to generate a topic-relevant CTA."""
+    examples = []
+    if content_templates and "cta_examples" in content_templates:
+        examples = random.sample(
+            content_templates["cta_examples"],
+            min(3, len(content_templates["cta_examples"]))
+        )
+    else:
+        examples = random.sample(CTA_OPTIONS, min(3, len(CTA_OPTIONS)))
+
+    examples_str = "\n".join(f'  - "{e}"' for e in examples)
+    return f"""Write an ORIGINAL short CTA (call-to-action) that SPECIFICALLY references the topic above.
+Match this tone (but do NOT copy any of these — write something NEW and topic-specific):
+{examples_str}
+RULES: The CTA must mention or reference the specific topic/activity. Keep it under 10 words, all lowercase."""
+
+
 def _build_dynamic_hook_instruction(
     topic: str,
     format_identity: str,
@@ -120,7 +138,14 @@ def build_system_prompt(brand_identity: Dict, content_templates: Optional[Dict] 
 
         elements_str = "', '".join(conversational_elements[:4])
 
-        return f"""{personality}. Your voice is {voice_description}. {voice}. Include phrases like '{elements_str}.' Tone: {tone}. Make it feel conversational, not clinical. Use lowercase, short sentences, and avoid fluff."""
+        # Include anti-AI rules if defined
+        anti_ai_section = ""
+        anti_ai_rules = style.get("anti_ai_rules", [])
+        if anti_ai_rules:
+            rules_str = "\n".join(f"- {rule}" for rule in anti_ai_rules)
+            anti_ai_section = f"\n\nCRITICAL WRITING RULES:\n{rules_str}"
+
+        return f"""{personality}. Your voice is {voice_description}. {voice}. Include phrases like '{elements_str}.' Tone: {tone}. Make it feel conversational, not clinical. Use lowercase, short sentences, and avoid fluff.{anti_ai_section}"""
 
     # Fallback to generic
     return f"""{personality}. Your voice is {voice_description}. Write like you're texting a friend who just asked for advice - warm, personal, with asides and opinions. Include phrases like 'honestly,' 'yes really,' 'worth it though.' Your content is casual but evidence-backed. Make it feel conversational, not clinical. Use lowercase, short sentences, and avoid fluff."""
@@ -167,13 +192,13 @@ Write a compelling hook about "{topic}" (≤{max_words} words, all lowercase)
 - Promise transformation or reveal
 - NO quotes or meta-text"""
 
-    return f"""Generate a TikTok carousel about "{topic}" for {niche}.
+    # Check for tip_prefix override in style_guidelines
+    use_tip_prefix = True
+    if content_templates and "style_guidelines" in content_templates:
+        use_tip_prefix = content_templates["style_guidelines"].get("use_tip_prefix", True)
 
-FORMAT: Habit/Tip List with {num_items} tips + final CTA slide
-
-{hook_instruction}
-
-SLIDES 2-{num_items + 1} (Tips):
+    if use_tip_prefix:
+        tip_format_section = f"""SLIDES 2-{num_items + 1} (Tips):
 CRITICAL: Each tip MUST start with "tip 1:", "tip 2:", "tip 3:", etc. This is REQUIRED, not meta-text.
 
 Format for each tip:
@@ -184,26 +209,69 @@ tip 1: [actionable habit - 3-5 words]
 EXAMPLE TIP FORMAT:
 tip 1: call early morning only
 
-7-8am catches decision makers before their inbox fills up. connect rate jumped from 12% to 31%.
+7-8am catches decision makers before their inbox fills up. connect rate jumped from 12% to 31%."""
+        tip_style_rule = '- REQUIRED: Start each tip with "tip 1:", "tip 2:", etc (this is NOT meta-text to skip)'
+        meta_rule = '- NO generic meta-text like "SLIDE X:" or "Hook:" (but "tip N:" is REQUIRED)'
+    else:
+        tip_format_section = f"""SLIDES 2-{num_items + 1} (Content slides):
+Each slide should lead directly with the content. Do NOT prefix with "tip 1:", "tip 2:", etc.
+
+Format for each slide:
+[bold heading or key point - 3-7 words]
+
+[1-2 short sentences max. one punchy insight or personal experience. scannable in 2-3 seconds.]
+
+EXAMPLE SLIDE FORMAT:
+psalm 34:18, the brokenhearted verse
+
+when everything fell apart I read this on repeat for a week. something about knowing God is close in the worst moment just kept me breathing."""
+        tip_style_rule = '- DO NOT prefix slides with "tip 1:", "tip 2:", etc. Lead directly with the content.'
+        meta_rule = '- NO generic meta-text like "SLIDE X:", "Hook:", or "Tip N:"'
+
+    # When not using tip prefix, require JSON output so the JSON parser handles it
+    json_instruction = ""
+    if not use_tip_prefix:
+        json_instruction = f"""
+
+IMPORTANT: Return your response as valid JSON with this exact structure:
+{{
+  "hook": "hook text for slide 1",
+  "slides": [
+    {{"slide_num": 1, "text": "hook text", "type": "hook"}},
+    {{"slide_num": 2, "text": "heading\\n\\nbody text", "type": "tip"}},
+    {{"slide_num": 3, "text": "heading\\n\\nbody text", "type": "tip"}},
+    {{"slide_num": {num_items + 2}, "text": "cta text", "type": "cta"}}
+  ],
+  "caption": "caption text with hashtags"
+}}
+Return ONLY the JSON object. No markdown, no code fences, no explanation."""
+
+    return f"""Generate a TikTok carousel about "{topic}" for {niche}.
+
+FORMAT: Habit/Tip List with {num_items} tips + final CTA slide
+
+{hook_instruction}
+
+{tip_format_section}
 
 SLIDE {num_items + 2} (CTA):
-{_random_cta(content_templates)}
+{_cta_instruction(content_templates)}
 
 STYLE RULES:
-- REQUIRED: Start each tip with "tip 1:", "tip 2:", etc (this is NOT meta-text to skip)
+{tip_style_rule}
 - All lowercase (except "I")
 - Conversational tone like texting a friend
 - Include asides and opinions ("{conv_elements_str}")
 - CRITICAL: Body text must be 1-2 sentences MAX per tip. Keep it scannable in 2-3 seconds
 - Specific details (times, numbers, exact steps)
 - NO quotation marks
-- NO generic meta-text like "SLIDE X:" or "Hook:" (but "tip N:" is REQUIRED)
+{meta_rule}
 - Write ONLY the text that appears on screen
 
 CONVERSATIONAL EXAMPLES:
 BAD (too clinical): "{bad_example}"
 GOOD (conversational): "{good_example}"
-
+{json_instruction}
 Generate {num_items} tips about "{topic}"."""
 
 
@@ -267,7 +335,7 @@ step 1: start with research
 10 minutes of research saves hours of wasted effort. understanding the problem beats jumping to solutions.
 
 SLIDE {num_items + 2} (CTA):
-{_random_cta(content_templates)}
+{_cta_instruction(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc (this is NOT meta-text to skip)
@@ -347,7 +415,7 @@ kitchen: safety essentials
 • stove knob covers before they climb
 
 SLIDE {num_categories + 2} (CTA):
-{_random_cta(content_templates)}
+{_cta_instruction(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Each category starts with a label and colon
@@ -367,7 +435,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
     {{"text": "[label]: [category]\\n\\n• [item]\\n• [item]\\n• [item]"}},
     ...
-    {{"text": "{_random_cta(content_templates)}"}}
+    {{"text": "[your topic-relevant CTA here]"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
 }}
@@ -422,7 +490,7 @@ habit 1: same wake time daily
 circadian rhythm needs consistency. their body learns to predict the day and cortisol regulation improves.
 
 SLIDE {num_habits + 2} (CTA):
-{_random_cta(content_templates)}
+{_cta_instruction(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each habit with "habit 1:", "habit 2:", etc
@@ -439,7 +507,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "habit 1: [boring habit]\\n([reason])\\n\\n[1-2 sentences]"}},
     {{"text": "habit 2: ..."}},
     ...
-    {{"text": "{_random_cta(content_templates)}"}}
+    {{"text": "[your topic-relevant CTA here]"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {topic}]"
 }}
@@ -494,7 +562,7 @@ step 1: start bedtime at same time
 their body learns when sleep is coming and melatonin production syncs up. yes it means weekends too.
 
 SLIDE {num_steps + 2} (CTA):
-{_random_cta(content_templates)}
+{_cta_instruction(content_templates)}
 
 STYLE RULES:
 - REQUIRED: Start each step with "step 1:", "step 2:", etc
@@ -514,7 +582,7 @@ OUTPUT FORMAT - Return ONLY valid JSON (no extra text):
     {{"text": "step 1: [action phrase]\\n([reason])\\n\\n[1-2 sentences]"}},
     {{"text": "step 2: ..."}},
     ...
-    {{"text": "{_random_cta(content_templates)}"}}
+    {{"text": "[your topic-relevant CTA here]"}}
   ],
   "pexels_query": "[3-4 word search query for parent/baby stock photos related to {outcome}]"
 }}

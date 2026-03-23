@@ -1,0 +1,69 @@
+{
+  "worship_content_rules": "WORSHIP CONTENT GUIDELINES: Scenes should feel authentic and reverent, never staged or performative. Churches should look like real worship spaces (wooden pews, stained glass, warm lighting) not megachurch stages. Hands in prayer or raised in worship should feel natural. Candles and golden light evoke sanctuary atmosphere. Family scenes should be warm and intimate. Nature scenes should evoke creation and God's presence. NO visible text/letters/words/writing in images. Maintain SAME setting and visual consistency across ALL slides in a carousel.",
+
+  "default_style": "caravaggio",
+
+  "aesthetic_styles": {
+    "caravaggio": "Museum photograph of an oil painting on aged canvas in a gilt frame, 17th century Baroque. Visible craquelure across the paint surface, yellowed aged varnish layer, canvas weave texture showing through thin paint passages. Extreme tenebrism: single dramatic spotlight from upper left, figures emerging from pitch-black background. Thick impasto highlights on noses, knuckles, and fabric folds. Warm golden candlelight on flesh with cool blue-green in deep shadows. Raw umber and burnt sienna underpainting visible at edges. Paint built up in layers: transparent glazes in shadows, opaque lead white in highlights. Deep reds, golds, earth tones in heavy draped fabric. Diagonal composition. NO museum label, NO attribution text, NO placard. NO modern objects (no phones, tablets, screens, electronics). ALL objects must be period-appropriate to the 1600s. NO visible text/letters/words/writing/signs/readable characters anywhere in the image",
+    "raphael_renaissance": "Museum photograph of a High Renaissance oil painting on poplar wood panel in a gilt frame, circa 1510. Fine network of age craquelure across the surface, warm amber varnish patina, wood grain subtly visible through thin paint layers. Soft diffused golden light bathes the scene evenly. Perfectly balanced pyramidal composition. Idealized beautiful figures with serene expressions and graceful poses. Sfumato technique: soft edges built through dozens of transparent glaze layers. Rich saturated colors: lapis lazuli blue, vermillion red, gold leaf, terre verte in flowing draped fabrics. Classical architecture with arched columns and coffered ceilings. Atmospheric perspective with hazy blue distance. NO museum label, NO attribution text, NO placard. NO modern objects (no phones, tablets, screens, electronics). ALL objects must be period-appropriate to the 1510s. NO visible text/letters/words/writing/signs/readable characters anywhere in the image",
+    "woodcut_dore": "High-resolution scan of a 19th century wood engraving printed on laid paper, from Gustave Dore's 1866 La Grande Bible de Tours. Visible paper texture with slight foxing and age spots. Ink absorption into paper fibers creates soft edges on the finest lines. Strictly black printing ink on cream-white paper, no color. Dense intricate crosshatching built from individual burin-cut lines, each with slight irregularity. Tonal values from pure paper white to deep saturated black achieved through line density alone. Dramatic chiaroscuro with divine light beams piercing through darkness. Epic cinematic scale with tiny figures against vast architecture or landscapes. Classical idealized figure proportions. Extraordinary fine detail in fabric folds, stone textures, cloud formations. NO modern objects (no phones, tablets, screens, electronics). ALL objects must be period-appropriate to biblical times. NO visible text/letters/words/writing/signs/readable characters anywhere in the image",
+    "stained_glass": "Close-up photograph of an authentic 13th century Gothic cathedral stained glass window filling the entire frame. The stained glass artwork IS the entire image, no people or objects in front of it. Bold H-profile lead came lines cast thin shadows between glass pieces. Each piece of handblown glass contains tiny bubbles, ripples, and thickness variations that create natural color variation. Rich jewel-tone saturated colors: deep cobalt blue, ruby red, emerald green, gold yellow, each piece glowing with transmitted sunlight from behind. Halation effect: bright colors bleed slightly at lead came edges. Flat 2D composition with no perspective. Figures painted in black grisaille vitreous paint fired into the glass surface. Gothic pointed arch frame with decorative border patterns. Iron support bars (saddlebars) visible crossing the window. Stone tracery frame. In the style of Chartres Cathedral rose windows. NO visible text/letters/words/writing/signs/readable characters",
+    "ethiopian_icon": "Close-up museum photograph of a 17th century Ethiopian Orthodox church painting on wood panel filling the entire frame, Gondarine period. The icon painting IS the entire image, no people or objects in front of it. Egg tempera paint on gesso-primed wooden board, fine cracks in the gesso ground visible. Smoke-darkened patina from centuries of church incense. Large distinctive almond-shaped eyes with prominent white sclera on all figures. Full frontal faces with both eyes always visible. Bold flat colors applied as solid areas: vivid red, warm yellow, rich blue, bright green, with no shading or gradients. Simple parallel lines indicate clothing folds. Warm brown skin tones. Large heads relative to bodies with rounded simplified forms. Strong black contour outlines defining every shape. Rich geometric interlace border patterns in red, yellow, green, and black. Simple flat colored halos with gold leaf traces. Wood panel edge visible at border. NO visible text/letters/words/writing/signs/readable characters",
+    "painterly": "Soft painterly illustration, warm sanctuary atmosphere, golden candlelight, reverent shadows, grainy texture, NOT stock photo, cream and gold color palette, intimate worship moment, soft focus, warm golden lighting, NO visible text/letters/words/writing/signs/readable characters",
+    "iphone_photo": "iPhone photography, authentic candid moment of faith, natural lighting, slightly grainy, real church life, NOT posed, NOT professional, warm natural tones, shallow depth of field, intimate genuine moment, NO visible text/letters/words/writing"
+  },
+
+  "brand_anchor": {
+    "caravaggio": "Museum photograph of a Baroque oil painting on aged canvas in a gilt frame. Craquelure and yellowed varnish. Extreme tenebrism: single spotlight illuminating an open Bible or hymnal on a dark wooden surface, warm golden candlelight cutting through pitch-black shadow. Thick impasto highlights, transparent shadow glazes. Deep reds and golds in heavy fabric. NO museum label, NO attribution text. NO modern objects. All objects period-appropriate 1600s. NO visible text/letters/words",
+    "raphael_renaissance": "Museum photograph of a Renaissance oil painting on poplar panel in a gilt frame, circa 1510. Age craquelure and amber varnish patina. Soft golden light illuminating a peaceful worship scene, balanced pyramidal composition, idealized serene figures, classical arched columns, rich lapis and vermillion draped fabrics, sfumato faces. NO museum label, NO attribution text. NO modern objects. All objects period-appropriate 1510s. NO visible text/letters/words",
+    "woodcut_dore": "High-resolution scan of a Gustave Dore wood engraving on aged laid paper. Visible paper foxing and ink absorption into fibers. Black and white only. Dramatic crosshatched Bible scene, beams of divine light piercing through darkness, epic cinematic scale, burin-cut lines with slight irregularity. NO modern objects. All objects period-appropriate to biblical times. NO visible text/letters/words",
+    "stained_glass": "Close-up photograph of an authentic 13th century stained glass window filling the entire frame. The stained glass artwork IS the whole image. Bold lead came lines casting shadows, handblown glass with bubbles and ripples, jewel-tone cobalt ruby emerald gold, luminous backlit radiance with halation, Gothic pointed arch frame, iron saddlebars visible. Chartres Cathedral style. NO visible text/letters/words",
+    "ethiopian_icon": "Close-up museum photograph of a 17th century Ethiopian Orthodox icon on wood panel filling the entire frame. The icon painting IS the whole image. Egg tempera on gesso with fine cracks, smoke-darkened patina from church incense. Large almond-shaped eyes, bold flat vivid colors, frontal figures, geometric interlace borders, Gondarine period style, flat colored halos with gold leaf traces. NO visible text/letters/words",
+    "painterly": "Soft painterly illustration, warm sanctuary interior, golden candlelight illuminating wooden pews, open Bible or hymnal, peaceful worship atmosphere, cream and gold color palette, reverent shadows, intimate sacred moment, grainy texture, NOT stock photo, soft focus, NO visible text/letters/words",
+    "iphone_photo": "iPhone photo of authentic worship moment, hands raised or folded in prayer, soft morning light through stained glass, warm natural tones, slightly grainy, real church setting, shallow depth of field, genuine faith captured candidly, NO visible text",
+    "description": "Primary brand visual, used for hook slides"
+  },
+
+  "scenes": {
+    "worship_sanctuary": {
+      "prompt": "Warm church sanctuary interior, golden candlelight, wooden pews, stained glass windows with warm light streaming through, peaceful worship atmosphere, hymnals and open Bibles",
+      "keywords": ["worship", "church", "sanctuary", "praise", "hymn", "song"]
+    },
+    "prayer_moment": {
+      "prompt": "Person with hands folded or raised in quiet prayer, soft golden lighting, intimate and reverent atmosphere, eyes closed in peaceful devotion",
+      "keywords": ["prayer", "pray", "devotion", "quiet time", "meditate"]
+    },
+    "family_faith": {
+      "prompt": "Family gathered in warm living room for devotional time, Bible open on table, warm lamplight, cozy intimate atmosphere, genuine connection",
+      "keywords": ["family", "together", "devotional", "kids", "parent", "home"]
+    },
+    "baptism_celebration": {
+      "prompt": "Joyful baptism scene, church baptistry with warm lighting, community gathered to witness, white garments, tears of joy, celebration of faith",
+      "keywords": ["baptism", "baptize", "new believer", "dedication", "celebration"]
+    },
+    "creation_nature": {
+      "prompt": "Breathtaking nature scene evoking God's creation, golden hour sunrise over mountains or calm lake, peaceful and awe-inspiring, warm morning light",
+      "keywords": ["creation", "nature", "sunrise", "beauty", "God's work", "mountain", "peace"]
+    },
+    "comfort_grief": {
+      "prompt": "Gentle comforting scene, two people embracing with soft golden light, warm and tender atmosphere, empathy and presence, quiet strength",
+      "keywords": ["comfort", "grief", "loss", "support", "healing", "hope"]
+    },
+    "wedding_blessing": {
+      "prompt": "Beautiful wedding moment, couple's hands joined with pastor's blessing, warm church interior, flowers, golden light, sacred commitment",
+      "keywords": ["wedding", "marriage", "bride", "groom", "vows", "love", "blessing"]
+    },
+    "scripture_reading": {
+      "prompt": "Open Bible on wooden surface with warm morning light, coffee nearby, quiet devotional setting, worn pages showing faithful use",
+      "keywords": ["Bible", "scripture", "verse", "read", "study", "devotional", "word"]
+    },
+    "gift_giving": {
+      "prompt": "Meaningful gift exchange between loved ones, warm intimate setting, genuine emotional reaction, wrapped gift or handwritten card, connection and love",
+      "keywords": ["gift", "present", "surprise", "meaningful", "milestone", "birthday", "anniversary"]
+    },
+    "music_worship": {
+      "prompt": "Acoustic guitar or piano in worship setting, musician leading gentle worship, warm stage lighting, intimate worship band, authentic musical moment",
+      "keywords": ["music", "song", "guitar", "piano", "sing", "worship band", "acoustic"]
+    }
+  }
+}

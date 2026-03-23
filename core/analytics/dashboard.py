@@ -485,9 +485,10 @@ accounts.forEach((name, idx) => {{
 
     // Recommendations HTML
     let recsHTML = '';
-    if (recommendations.length > 0) {{
+    const visibleRecs = recommendations.filter(r => (r.status || 'pending') !== 'dismissed');
+    if (visibleRecs.length > 0) {{
         let recsCards = '';
-        recommendations.forEach(rec => {{
+        visibleRecs.forEach(rec => {{
             const conf = rec.confidence || 'medium';
             const status = rec.status || 'pending';
             recsCards += `

@@ -66,6 +66,32 @@ def get_visual_guidance(context: dict) -> Optional[str]:
     return "Data shows best performance with: " + ", ".join(parts)
 
 
+def get_hook_visual_guidance(context: dict) -> Optional[str]:
+    """Build prose string from hook_recipe visual attributes for hook slides."""
+    insights = context.get("visual_insights", {})
+    hook = insights.get("hook_recipe", {})
+    if not hook:
+        # Fall back to top_performing if no hook-specific data
+        return get_visual_guidance(context)
+
+    labels = {
+        "photography_style": "style",
+        "lighting": "lighting",
+        "color_palette": "color palette",
+        "composition": "composition",
+        "scene_setting": "setting",
+        "subject_focus": "subject focus",
+        "mood": "mood",
+    }
+
+    parts = []
+    for attr, value in hook.items():
+        label = labels.get(attr, attr)
+        parts.append(f"{value.replace('_', ' ')} {label}")
+
+    return "Data shows best hook performance with: " + ", ".join(parts)
+
+
 def get_explore_visual_guidance(context: dict) -> Optional[str]:
     """Pick random untested combo from explore_targets for explore mode."""
     targets = context.get("explore_targets", {})
@@ -105,13 +131,26 @@ def should_explore(context: dict) -> bool:
     return random.random() < ratio
 
 
-def pick_pillar_by_tier(context: dict, all_pillars: list[str]) -> Optional[str]:
+def pick_pillar_by_tier(context: dict, all_pillars: list[str],
+                        context_path=None, llm_client=None,
+                        recent_topics=None) -> Optional[str]:
     """Pick a content pillar using tier-based selection.
 
     Exploit mode: pick from tier_1_proven (broad categories matched to pillars).
     Explore mode: pick from tier_3_explore if populated, else tier_2_promising.
     Returns None if no tier data exists (caller falls back to random).
     """
+    # Seasonal injection — check before normal tier logic
+    if context_path and llm_client:
+        from core.seasonal import pick_seasonal_topic
+        seasonal = pick_seasonal_topic(
+            context_path, llm_client, recent_topics or set(),
+            seasonal_ratio=context.get("seasonal_ratio", 0.25),
+        )
+        if seasonal:
+            logger.info(f"🎄 Seasonal topic selected: '{seasonal}'")
+            return seasonal
+
     tiers = context.get("pillar_priority_tiers")
     if not tiers:
         return None
@@ -182,26 +221,27 @@ def replenish_explore_topics(context_path: Path, llm_client, min_threshold: int 
     content_angle = context.get("content_angle", "actionable activities over advice")
     tier_1 = tiers.get("tier_1_proven", [])
 
-    prompt = f"""Generate {replenish_count} unique content topic categories for a parenting TikTok/Instagram account targeting parents of babies and toddlers (0-4 years).
+    prompt = f"""Generate {replenish_count} unique, hyper-specific content topics for a parenting TikTok account targeting parents of babies and toddlers (0-4 years).
 
 WHAT PERFORMS BEST: {content_angle}
 TOP CATEGORIES: {', '.join(tier_1)}
 
 Rules:
-- Each topic: 2-6 words, broad enough for 5-10 posts
-- Lean toward hands-on, actionable, activity-based content
+- Each topic: 5-15 words, SPECIFIC enough to be a single post
+- Include age-specific topics (e.g., "sensory bin ideas for 9 month olds", "craft projects for 3 year olds")
+- Include parent-situation topics (e.g., "activities when you're too tired to move", "keeping baby busy while cooking dinner")
+- Include craft/DIY topics (e.g., "mess-free painting for toddlers", "contact paper sticky wall ideas")
+- Include zero-cost/household item activities
 - Do NOT include any of these existing topics: {', '.join(sorted(all_existing))}
-- No generic/vague categories — be specific enough to inspire content
-- Mix of evergreen and trending parenting topics
+- Think TikTok virality: parents should see the topic and think "that's literally MY kid right now"
 
-Return ONLY a JSON array of {replenish_count} strings. No explanations.
-Example: ["topic one", "topic two"]"""
+Return ONLY a JSON array of {replenish_count} strings. No explanations."""
 
     try:
         response = llm_client.chat_completion(
             messages=[{"role": "user", "content": prompt}],
             temperature=0.9,
-            max_tokens=800
+            max_tokens=1500
         )
 
         # Parse JSON array from response

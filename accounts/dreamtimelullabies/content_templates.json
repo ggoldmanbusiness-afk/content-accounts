@@ -115,18 +115,21 @@
     }
   },
   "hook_examples": {
-    "number_formula": [
-      "5 bedtime mistakes keeping your baby awake",
-      "7 sleep cues you're missing",
-      "3 things to fix tonight for better sleep"
+    "specific_outcome": [
+      "5 activities that bought me 30 minutes of silence with a 2 year old",
+      "the one backyard game that wore my toddler out in 15 minutes flat",
+      "3 things I tried at bedtime that actually worked by night 2",
+      "that kitchen drawer hack gave me 20 uninterrupted minutes"
     ],
-    "transformation": [
-      "The one thing that changed our nights",
-      "What finally worked for sleep regression"
+    "age_specific": [
+      "what to actually do all day with a 3 month old who can't sit yet",
+      "6 activities my 18 month old did for longer than 5 minutes",
+      "the exact routine that got my 9 month old sleeping through the night"
     ],
-    "wish_i_knew": [
-      "What I wish I knew about sleep schedules",
-      "The sleep tip every new parent needs"
+    "unexpected_twist": [
+      "I stopped buying toys and my toddler played longer (here's why)",
+      "the messiest activity taught my kid the most (worth the cleanup)",
+      "the boring bedtime trick that outperformed every sleep course I tried"
     ]
   },
   "scoring_references": {

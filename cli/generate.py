@@ -89,6 +89,7 @@ def load_account_config(account_name: str) -> tuple[AccountConfig, Path, Optiona
             gemini_api_key=getattr(config_module, 'GEMINI_API_KEY', None),
             caption_cta_instruction=getattr(config_module, 'CAPTION_CTA_INSTRUCTION', ''),
             caption_cta_suffix=getattr(config_module, 'CAPTION_CTA_SUFFIX', ''),
+            seasonal_topics_enabled=getattr(config_module, 'SEASONAL_TOPICS_ENABLED', False),
             qa_config=getattr(config_module, 'QA_RULES', {}),
         )
 
@@ -276,9 +277,8 @@ Examples:
     parser.add_argument(
         '--style',
         type=str,
-        choices=['iphone_photo', 'iphone_photo_v2', 'painterly', 'painterly_v2'],
         default=None,
-        help='Aesthetic style for images (default: random v2 mix)'
+        help='Aesthetic style for images (e.g., caravaggio, woodcut_dore, stained_glass, ethiopian_icon, raphael_renaissance, painterly, iphone_photo)'
     )
 
     parser.add_argument(
@@ -291,6 +291,13 @@ Examples:
         '--qa',
         action='store_true',
         help='Run LLM image QA checks after generation (~$0.10/carousel)'
+    )
+
+    parser.add_argument(
+        '--promo',
+        type=str,
+        default=None,
+        help='Soft-promote a product (e.g., --promo slumbersongs). Weaves mention into one tip + replaces CTA slide.'
     )
 
     args = parser.parse_args()
@@ -358,7 +365,8 @@ Examples:
                 topic=args.topic,
                 content_format=args.format,
                 num_items=args.slides,
-                use_random=args.random
+                use_random=args.random,
+                promo=args.promo,
             )
 
             output_dirs.append(Path(result["output_dir"]))

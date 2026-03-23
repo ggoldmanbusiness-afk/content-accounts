@@ -1,0 +1,114 @@
+[
+  {
+    "category": "child_count",
+    "description": "Two babies appearing in scene - one held by parent and one in crib simultaneously. Only ONE child should appear unless topic is explicitly about siblings.",
+    "carousel_dir": "transferred from dreamtimelullabies",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib visible in non-bedroom setting (kitchen, living room). Cribs should ONLY appear in nursery or bedroom settings.",
+    "carousel_dir": "transferred from dreamtimelullabies",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_mismatch",
+    "description": "Phone screen in scene shows different image than the actual scene around it - avoid phones showing photos.",
+    "carousel_dir": "transferred from dreamtimelullabies",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "safe_sleep",
+    "description": "Babies shown sleeping with loose blankets, sheets, bumpers, or stuffed animals in crib. Cribs must be EMPTY except for baby in sleep sack. No sheets, no bumpers, no pillows, no stuffed animals.",
+    "carousel_dir": "2026-02-28_bedtime-routine-that-actually-works-for-newborns",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "safety",
+    "description": "Bath water shown steaming or visibly hot. Baby bath water must be lukewarm, never steaming. No visual indicators of hot water.",
+    "carousel_dir": "2026-02-28_bedtime-routine-that-actually-works-for-newborns",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib placed in middle of room or floating in unrealistic position. Cribs should always be against a wall in a realistic bedroom layout.",
+    "carousel_dir": "2026-02-28_newborn-survival-tips-for-the-first-30-days",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Different cribs appearing across slides in the same carousel. Maintain visual consistency - same crib, same room throughout all slides.",
+    "carousel_dir": "2026-02-28_how-music-affects-baby-sleep-cycles-and-development",
+    "slide_num": 5,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "anatomy",
+    "description": "Floating or disconnected limbs (arms, hands) appearing in scenes. All body parts must be anatomically connected to a person.",
+    "carousel_dir": "2026-02-28_how-music-affects-baby-sleep-cycles-and-development",
+    "slide_num": 2,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scale",
+    "description": "Objects rendered at unrealistic scale (giant mobile, oversized furniture). All objects should be proportional to the room and people.",
+    "carousel_dir": "2026-02-28_how-music-affects-baby-sleep-cycles-and-development",
+    "slide_num": 3,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "safe_sleep",
+    "description": "Items visible inside crib (stuffed animals, toys, loose items). Crib must be completely empty except for baby in sleep sack.",
+    "carousel_dir": "2026-02-28_how-music-affects-baby-sleep-cycles-and-development",
+    "slide_num": 6,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "gender_mismatch",
+    "description": "CTA text says 'tag a tired mama' but image shows a father/dad. Text and image gender must match, or use gender-neutral language like 'tag a tired parent'.",
+    "carousel_dir": "2026-02-28_how-music-affects-baby-sleep-cycles-and-development",
+    "slide_num": 7,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "structural",
+    "description": "Hook slide missing or skipped - carousel jumps straight to Tip 1 without a hook slide. Slide 1 must always be the hook.",
+    "carousel_dir": "2026-02-28_bedtime-routine-that-actually-works-for-newborns",
+    "slide_num": 1,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_consistency",
+    "description": "Room or setting changes between slides in the same carousel. Maintain the same room, furniture, and layout throughout all slides for visual consistency.",
+    "carousel_dir": "general",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib missing bars or slats - rendered as a solid-walled box. Cribs must always have visible vertical wooden slat bars on all sides.",
+    "carousel_dir": "2026-02-28_the-newborn-bedtime-routine-that-actually-gets-them-sleeping",
+    "slide_num": null,
+    "timestamp": "2026-03-01T10:00:00"
+  },
+  {
+    "category": "text_rendering",
+    "description": "Weird boxes or artifacts appearing in text overlay on slides. Text must render cleanly without visual glitches.",
+    "carousel_dir": "2026-02-28_the-newborn-bedtime-routine-that-actually-gets-them-sleeping",
+    "slide_num": 5,
+    "timestamp": "2026-03-01T10:00:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib floating in midair or suspended off the ground. Cribs must be on the floor in a realistic position against a wall.",
+    "carousel_dir": "2026-02-28_newborn-survival-tips-for-the-first-30-days_v2",
+    "slide_num": 2,
+    "timestamp": "2026-03-01T10:00:00"
+  }
+]

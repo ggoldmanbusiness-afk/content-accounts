@@ -32,6 +32,22 @@ class BaseContentGenerator:
     SLIDE_WIDTH = 1080
     SLIDE_HEIGHT = 1920
 
+    # Promo registry — maps promo key to product details for soft-sell injection
+    PROMO_REGISTRY = {
+        "slumbersongs": {
+            "product_name": "SlumberSongs",
+            "url": "slumbersongs.com",
+            "one_liner": "personalized lullabies with your baby's name",
+            "cta_slide_text": "create a lullaby with your baby's name at slumbersongs.com",
+            "tip_weave_instruction": (
+                "Naturally mention SlumberSongs (personalized lullabies featuring the baby's name) "
+                "as ONE of several options or tips — never the main focus. Keep it subtle, like a "
+                "recommendation from a friend, not an ad. Example tone: 'some parents love having "
+                "a personalized lullaby (slumbersongs.com makes them with your baby's name)'"
+            ),
+        },
+    }
+
     # Character type guidance for image generation
     CHARACTER_TYPE_GUIDANCE = {
         "personal_brand": {
@@ -170,7 +186,8 @@ class BaseContentGenerator:
         content_format: str = None,
         num_items: int = 5,
         use_random: bool = False,
-        hook_strategy: str = "viral"
+        hook_strategy: str = "viral",
+        promo: str = None,
     ) -> Dict:
         """
         Generate complete carousel with AI images and text overlays
@@ -262,6 +279,27 @@ class BaseContentGenerator:
             num_items=num_items,
             hook_strategy=hook_strategy
         )
+
+        # Verify any Bible references in the generated content
+        try:
+            from core.bible_verify import verify_all_references
+            slide_texts = " ".join(
+                s.get("text", "") + " " + s.get("caption", "")
+                for s in content.get("slides", [])
+            )
+            if slide_texts.strip():
+                verifications = verify_all_references(slide_texts)
+                for v in verifications:
+                    if v["valid"]:
+                        logger.info(f"✅ Bible ref verified: {v['reference']}")
+                    else:
+                        logger.warning(f"⚠️  Bible ref FAILED: {v['reference']} — {v.get('error', 'unknown')}")
+        except Exception as e:
+            logger.debug(f"Bible verification skipped: {e}")
+
+        # Apply promo overlay if requested
+        if promo:
+            content = self._apply_promo(content, promo, topic)
 
         # 2. Generate contextual image prompts using Claude
         image_prompts = self._get_image_prompts(
@@ -357,19 +395,31 @@ class BaseContentGenerator:
         slides_dir.mkdir(parents=True, exist_ok=True)
 
         # 5. Add text overlays and save slides
-        logger.info("Adding text overlays with pilmoji (emoji support)...")
+        # Check if account uses pill-style text (TikTok native)
+        text_style = "stroke"  # default
+        if self.content_templates and "style_guidelines" in self.content_templates:
+            text_style = self.content_templates["style_guidelines"].get("text_style", "stroke")
+
+        logger.info(f"Adding text overlays ({text_style} style)...")
         num_slides = len(content["slides"])
 
         for i, (img, slide_content) in enumerate(zip(images, content["slides"])):
             # First and last slides are hooks/CTAs (centered)
             is_hook = (i == 0) or (i == num_slides - 1)
 
-            # Add text overlay
-            img_with_text = self._add_text_overlay(
-                img,
-                slide_content["text"],
-                is_hook=is_hook
-            )
+            # Add text overlay using configured style
+            if text_style == "pill":
+                img_with_text = self._add_text_overlay_pills(
+                    img,
+                    slide_content["text"],
+                    is_hook=is_hook
+                )
+            else:
+                img_with_text = self._add_text_overlay(
+                    img,
+                    slide_content["text"],
+                    is_hook=is_hook
+                )
 
             # Save slide
             slide_path = slides_dir / f"slide_{i+1:02d}.png"
@@ -383,7 +433,7 @@ class BaseContentGenerator:
             hashtags = self._build_topic_hashtags(topic)
             caption = f"{caption_text}\n\n{hashtags}"
         else:
-            caption = self._generate_caption(content)
+            caption = self._generate_caption(content, promo=promo)
         caption_path = output_dir / "caption.txt"
         caption_path.write_text(caption)
 
@@ -632,17 +682,47 @@ class BaseContentGenerator:
             fmt = self.content_templates["formats"].get(content_format, {})
             is_cloned_fmt = fmt.get("is_cloned_format", False)
 
-        if content_format in ["scripts", "boring_habits", "how_to"] or is_cloned_fmt:
-            try:
-                # Extract JSON from response (may have wrapper text)
-                json_match = re.search(r'\{.*\}', content_text, re.DOTALL)
-                if json_match:
-                    data = json.loads(json_match.group(0))
-
+        # Try JSON parsing for all formats (LLM may return JSON even when not expected)
+        try:
+            json_match = re.search(r'\{.*\}', content_text, re.DOTALL)
+            if json_match:
+                data = json.loads(json_match.group(0))
+                if "slides" in data and isinstance(data["slides"], list) and len(data["slides"]) >= 3:
                     # Convert to expected format
                     slides = []
+                    hook_added = False
+
+                    # Find hook text from multiple sources
+                    hook_text = data.get("hook")  # Top-level hook field
+                    if not hook_text:
+                        # Check if any slide has type "hook"
+                        for sd in data.get("slides", []):
+                            if sd.get("type", "").lower() == "hook":
+                                hook_text = sd.get("text", "")
+                                break
+
                     for slide_data in data.get("slides", []):
-                        slides.append({"text": slide_data["text"]})
+                        text = slide_data.get("text", "")
+                        slide_type = slide_data.get("type", "")
+                        # Ensure first slide is the hook, not a tip
+                        if not hook_added:
+                            if text.lower().startswith(("tip ", "step ")):
+                                if hook_text:
+                                    # Use recovered hook text
+                                    slides.append({"text": hook_text})
+                                else:
+                                    # Generate fallback hook from topic
+                                    fallback_hook = f"{num_items} tips about {topic} that actually work"
+                                    logger.warning(f"No hook found in JSON, using fallback: {fallback_hook}")
+                                    slides.append({"text": fallback_hook})
+                            else:
+                                slides.append({"text": text})
+                            hook_added = True
+                        else:
+                            # Skip duplicate of hook if it appears as a later slide too
+                            if slide_type.lower() == "hook":
+                                continue
+                            slides.append({"text": text})
 
                     # Validate content isn't placeholder text
                     placeholder_patterns = ["explanation here", "[hook text]", "[phrase]", "[situation]", "[action phrase]"]
@@ -658,9 +738,12 @@ class BaseContentGenerator:
                             "caption": data.get("caption"),
                             "pexels_query": data.get("pexels_query")
                         }
+                elif content_format not in ["scripts", "boring_habits", "how_to"] and not is_cloned_fmt:
+                    logger.info(f"JSON found but insufficient slides for {content_format}, falling back to text parsing")
                 else:
-                    logger.warning(f"No JSON found in response for {content_format} format, falling back to text parsing")
-            except json.JSONDecodeError as e:
+                    logger.warning(f"No valid slides array in JSON for {content_format}, falling back to text parsing")
+        except json.JSONDecodeError as e:
+            if content_format in ["scripts", "boring_habits", "how_to"] or is_cloned_fmt:
                 logger.warning(f"Failed to parse JSON response for {content_format}: {e}, falling back to text parsing")
 
         # Legacy text parsing (for habit_list, step_guide)
@@ -875,8 +958,18 @@ class BaseContentGenerator:
             }
 
         # Use semantic scorer for quality evaluation
-        total, feedback = self.semantic_scorer.score_hook(hook_text)
-        dimension_scores = self.semantic_scorer.get_dimension_breakdown(hook_text)
+        try:
+            total, feedback = self.semantic_scorer.score_hook(hook_text)
+            dimension_scores = self.semantic_scorer.get_dimension_breakdown(hook_text)
+        except Exception as e:
+            logger.warning(f"⚠️  Semantic scoring failed ({e}), auto-passing hook")
+            return {
+                "total": min_score,
+                "scores": {},
+                "grade": "B",
+                "passed": True,
+                "feedback": [f"Scoring unavailable — auto-passed"]
+            }
 
         passed = total >= min_score
 
@@ -942,10 +1035,12 @@ class BaseContentGenerator:
         """Generate contextual image prompts using Claude"""
         prompts = []
 
-        # Choose aesthetic style (use override if set, otherwise default to iphone_photo_v2)
+        # Choose aesthetic style (use override if set, then default_style, then fallback)
         available_styles = list(self.scenes.get("aesthetic_styles", {}).keys())
         if hasattr(self, '_style_override') and self._style_override:
             style = self._style_override
+        elif self.scenes.get("default_style") and self.scenes["default_style"] in available_styles:
+            style = self.scenes["default_style"]
         elif "iphone_photo_v2" in available_styles:
             style = random.choice(["iphone_photo_v2", "painterly_v2"])
         else:
@@ -1045,7 +1140,7 @@ Generate a scene that matches this topic and the target aesthetic. Keep it simpl
                 temperature=0.7,
                 max_tokens=350
             )
-            full_prompt = f"{scene_description}, {base_aesthetic}"
+            full_prompt = f"{base_aesthetic}, {scene_description}"
             logger.info(f"Generated contextual hook scene for '{topic}'")
             return full_prompt
 
@@ -1053,7 +1148,7 @@ Generate a scene that matches this topic and the target aesthetic. Keep it simpl
             logger.error(f"Failed to generate hook scene prompt: {e}")
             logger.info("Falling back to topic-aware generic prompt")
             # Fallback to topic-aware prompt instead of baby-in-crib brand anchor
-            return f"Warm authentic parenting moment related to {topic}, {base_aesthetic}"
+            return f"{base_aesthetic}, warm authentic parenting moment related to {topic}"
 
     def _generate_contextual_prompts(
         self,
@@ -1113,6 +1208,14 @@ Generate a scene that matches this topic and the target aesthetic. Keep it simpl
                 except Exception:
                     pass
 
+            # Add child safety rules only for parenting accounts
+            child_safety_rules = ""
+            if self.scenes and self.scenes.get("safe_sleep_rules"):
+                child_safety_rules = """
+- Only ONE baby/child per scene (never show two different babies)
+- Children must be seated in chairs, high chairs, or on laps — NEVER sitting on tables or counters
+- Cribs should ONLY appear in a child's bedroom or nursery — NEVER in living rooms, kitchens, or other rooms"""
+
             prompt = f"""Generate image prompts for a carousel about "{topic}" for {value_prop}.
 
 For each slide, create a visual scene that DIRECTLY MATCHES the content.
@@ -1125,10 +1228,8 @@ REQUIREMENTS:
 {character_section}
 - Keep scenes authentic, realistic, and on-brand
 - Focus on the SPECIFIC action/concept in each slide
-- The LAST slide is a CTA (save/share/comment) - make it a warm closing scene related to "{topic}" (e.g., parent looking at phone, cozy moment with child, or a flat lay of items from the topic). Do NOT default to a sleeping baby unless the topic is about sleep.
-- NO text, writing, labels, clocks, signs, book pages, or readable elements in any scene
-- Only ONE baby/child per scene — NEVER two children unless the topic is specifically about siblings
-- Cribs/bassinets ONLY in bedrooms — NEVER in kitchens, living rooms, or other rooms{visual_direction}{learnings_block}
+- The LAST slide is a CTA (save/share/comment) - make it a warm closing scene related to "{topic}" that fits the brand: {value_prop}. Do NOT reuse characters or scenes from earlier slides — create a distinct warm closing moment.
+- NO text, writing, labels, clocks, signs, book pages, or readable elements in any scene{visual_direction}{learnings_block}
 
 CRITICAL - VISUAL CONSISTENCY:
 All scenes must maintain CONSISTENT visual style:
@@ -1138,15 +1239,21 @@ All scenes must maintain CONSISTENT visual style:
 - Same artistic approach
 - Same mood and atmosphere
 
+CRITICAL - EVERY SLIDE MUST HAVE A UNIQUE SCENE:
+- Each slide MUST depict a DIFFERENT setting, angle, subject, or moment
+- NEVER reuse the same scene description or composition across slides
+- Vary: location (church interior, outdoor, home, car, park), camera angle (close-up, wide shot, overhead, profile), subject (hands, face, full body, objects), activity (praying, singing, reading, walking, embracing)
+- If the topic is abstract, find CONCRETE visual metaphors that differ per slide
+- You MUST return exactly {len(slides_text)} unique scene descriptions
+
 CRITICAL - COMPOSITION RULES:
 - ONE clear scene per image with a single focal point
-- Only ONE baby/child per scene (never show two different babies)
 - NO collages, split screens, or composite images
 - NEVER include a small inset/picture-in-picture image within the scene — each image must be ONE continuous scene filling the entire frame
 - Keep scenes simple and realistic — do not combine objects from different rooms
-- Children must be seated in chairs, high chairs, or on laps — NEVER sitting on tables or counters
-- Match the SETTING to the topic — if about restaurants, every scene should be in a restaurant. Do NOT show nursery/crib scenes for non-sleep topics
-- Cribs should ONLY appear in a child's bedroom or nursery — NEVER in living rooms, kitchens, or other rooms
+- Match the SETTING to the topic — every scene should visually relate to the topic
+- NEVER describe modern objects (phones, tablets, screens, electronics, cars) — all objects must fit the art style's time period
+- NEVER describe text, writing, signs, labels, scrolls with words, or any readable content in scenes — the image generator will render gibberish text{child_safety_rules}
 
 BASE AESTHETIC (always include at end):
 {base_aesthetic}
@@ -1169,7 +1276,7 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                     }
                 ],
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=3000
             )
 
             # Extract JSON array
@@ -1183,7 +1290,17 @@ Generate {len(slides_text)} contextual scene descriptions:"""
                     if aesthetic_snippet in p:
                         full_prompts.append(p)  # Already has aesthetic
                     else:
-                        full_prompts.append(f"{p}, {base_aesthetic}")
+                        full_prompts.append(f"{base_aesthetic}, {p}")
+
+                # If Claude returned fewer prompts than needed, pad with unique fallbacks
+                if len(full_prompts) < len(slides_text):
+                    logger.warning(f"Got {len(full_prompts)} prompts but need {len(slides_text)}, padding with unique scenes")
+                    used_scenes = set()
+                    for i in range(len(full_prompts), len(slides_text)):
+                        fallback = self._match_scene_to_content_unique(slides_text[i], used_scenes)
+                        used_scenes.add(fallback)
+                        full_prompts.append(f"{base_aesthetic}, {fallback}")
+
                 logger.info(f"Generated {len(full_prompts)} contextual image prompts")
                 return full_prompts
             else:
@@ -1192,7 +1309,13 @@ Generate {len(slides_text)} contextual scene descriptions:"""
         except Exception as e:
             logger.error(f"Failed to generate contextual prompts: {e}")
             logger.info("Falling back to keyword matching")
-            return [self._match_scene_to_content(text) + f", {base_aesthetic}" for text in slides_text]
+            used_scenes = set()
+            fallback_prompts = []
+            for text in slides_text:
+                scene = self._match_scene_to_content_unique(text, used_scenes)
+                used_scenes.add(scene)
+                fallback_prompts.append(f"{base_aesthetic}, {scene}")
+            return fallback_prompts
 
     @staticmethod
     def _sanitize_image_prompt(prompt: str) -> str:
@@ -1246,23 +1369,30 @@ Generate {len(slides_text)} contextual scene descriptions:"""
 
     def _match_scene_to_content(self, content_text: str) -> str:
         """Match content keywords to scene prompts (fallback)"""
+        return self._match_scene_to_content_unique(content_text, set())
+
+    def _match_scene_to_content_unique(self, content_text: str, used_scenes: set) -> str:
+        """Match content keywords to scene prompts, avoiding already-used scenes"""
         text_lower = content_text.lower()
 
-        # Try to find matching scene
+        # Try to find matching scene that hasn't been used yet
         for scene_id, scene_data in self.scenes["scenes"].items():
             keywords = scene_data.get("keywords", [])
             for keyword in keywords:
-                if keyword in text_lower:
+                if keyword in text_lower and scene_data["prompt"] not in used_scenes:
                     return scene_data["prompt"]
 
-        # Default fallback - use first available scenes from this account
-        if self.scenes["scenes"]:
-            available_scenes = list(self.scenes["scenes"].values())
-            # Return prompts from first 3 scenes, or all if less than 3
-            default_scenes = [scene["prompt"] for scene in available_scenes[:3]]
-            return random.choice(default_scenes)
+        # If best match was already used, try any unused scene
+        available_scenes = list(self.scenes["scenes"].values())
+        unused = [s["prompt"] for s in available_scenes if s["prompt"] not in used_scenes]
+        if unused:
+            return random.choice(unused)
 
-        # Ultimate fallback - generic description
+        # All scenes used — pick random (better than nothing)
+        if available_scenes:
+            return random.choice([s["prompt"] for s in available_scenes])
+
+        # Ultimate fallback
         return "Professional setting, modern workspace, authentic moment"
 
     def _resize_to_instagram(self, img: Image.Image) -> Image.Image:
@@ -1332,6 +1462,152 @@ Generate {len(slides_text)} contextual scene descriptions:"""
         vignetted = (img_array * vignette).astype(np.uint8)
 
         return Image.fromarray(vignetted)
+
+    def _add_text_overlay_pills(
+        self,
+        img: Image.Image,
+        text: str,
+        is_hook: bool
+    ) -> Image.Image:
+        """Add TikTok-native per-line pill text overlay (Montserrat font)"""
+        import os
+
+        img = img.convert("RGBA")
+        overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        img_width, img_height = img.size
+        center_x = img_width // 2
+
+        # Font paths
+        fonts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "fonts")
+        font_bold_path = os.path.join(fonts_dir, "Montserrat-Bold.ttf")
+        font_semi_path = os.path.join(fonts_dir, "Montserrat-SemiBold.ttf")
+
+        # Fallback to system font if Montserrat not found
+        if not os.path.exists(font_bold_path):
+            font_bold_path = "/System/Library/Fonts/Helvetica.ttc"
+            font_semi_path = font_bold_path
+
+        # Pill styling constants
+        bg_color = (0, 0, 0, 195)  # ~76% opacity black
+        text_color = (255, 255, 255, 255)
+        shadow_color = (0, 0, 0, 180)
+        pill_radius = 7
+        pad_h = 10
+        pad_v = 5
+        line_gap = 4
+        section_gap = 16
+        max_text_width = img_width - 120
+
+        # Safe zones
+        safe_top = 280
+        safe_bottom = img_height - 300
+
+        def _get_text_size(text, font):
+            bbox = draw.textbbox((0, 0), text, font=font)
+            return bbox[2] - bbox[0], bbox[3] - bbox[1], bbox[1]
+
+        def _wrap(text, font):
+            words = text.split()
+            lines = []
+            current = ""
+            for word in words:
+                test = f"{current} {word}".strip()
+                w, _, _ = _get_text_size(test, font)
+                if w <= max_text_width:
+                    current = test
+                else:
+                    if current:
+                        lines.append(current)
+                    current = word
+            if current:
+                lines.append(current)
+            return lines
+
+        def _draw_pill(text, font, y):
+            w, h, y_off = _get_text_size(text, font)
+            pill_w = w + pad_h * 2
+            pill_h = h + pad_v * 2
+            pill_x = center_x - pill_w // 2
+            draw.rounded_rectangle(
+                [pill_x, y, pill_x + pill_w, y + pill_h],
+                radius=pill_radius, fill=bg_color,
+            )
+            tx = center_x - w // 2
+            ty = y + pad_v - y_off
+            draw.text((tx + 1, ty + 1), text, font=font, fill=shadow_color)
+            draw.text((tx, ty), text, font=font, fill=text_color)
+            return y + pill_h
+
+        def _draw_block(lines, font, start_y):
+            y = start_y
+            for line in lines:
+                bottom = _draw_pill(line, font, y)
+                y = bottom + line_gap
+            return y - line_gap
+
+        def _block_height(lines, font):
+            total = 0
+            for i, line in enumerate(lines):
+                _, h, _ = _get_text_size(line, font)
+                total += h + pad_v * 2
+                if i < len(lines) - 1:
+                    total += line_gap
+            return total
+
+        if is_hook:
+            # Hook/CTA: single block, larger font
+            font = ImageFont.truetype(font_bold_path, 54)
+            wrapped = _wrap(text, font)
+            total_h = _block_height(wrapped, font)
+            start_y = (safe_top + safe_bottom) // 2 - total_h // 2
+            start_y = max(safe_top, min(start_y, safe_bottom - total_h))
+            _draw_block(wrapped, font, start_y)
+        else:
+            # Content slide: parse into headline / subtitle / body
+            parts = text.split('\n')
+            parts = [p.strip() for p in parts if p.strip()]
+
+            # Build sections: first non-empty line = headline, rest = body
+            # If first line contains a comma, split into headline + subtitle
+            sections = []
+            if parts:
+                first_line = parts[0]
+                if ',' in first_line and len(first_line.split(',')[0]) < 30:
+                    # e.g. "philippians 4:6-7, the worry exchange"
+                    headline_part = first_line.split(',')[0].strip()
+                    subtitle_part = ','.join(first_line.split(',')[1:]).strip()
+                    font_h = ImageFont.truetype(font_bold_path, 58)
+                    font_s = ImageFont.truetype(font_semi_path, 42)
+                    sections.append((_wrap(headline_part, font_h), font_h))
+                    sections.append((_wrap(subtitle_part, font_s), font_s))
+                else:
+                    font_h = ImageFont.truetype(font_bold_path, 58)
+                    sections.append((_wrap(first_line, font_h), font_h))
+
+                # Remaining lines as body
+                if len(parts) > 1:
+                    body_text = ' '.join(parts[1:])
+                    font_b = ImageFont.truetype(font_semi_path, 36)
+                    sections.append((_wrap(body_text, font_b), font_b))
+
+            # Calculate total height
+            total_h = 0
+            for wrapped, font in sections:
+                total_h += _block_height(wrapped, font)
+            total_h += section_gap * max(0, len(sections) - 1)
+
+            start_y = (safe_top + safe_bottom) // 2 - total_h // 2
+            start_y = max(safe_top, min(start_y, safe_bottom - total_h))
+
+            y = start_y
+            for wrapped, font in sections:
+                y = _draw_block(wrapped, font, y)
+                y += section_gap
+
+        result = Image.alpha_composite(img, overlay).convert("RGB")
+        return result
 
     def _add_text_overlay(
         self,
@@ -1560,7 +1836,20 @@ Generate {len(slides_text)} contextual scene descriptions:"""
         # Draw fill text on top
         pilmoji.text((x, y), text, font=font, fill=(255, 255, 255, 255))  # White text
 
-    def _generate_caption(self, content: Dict) -> str:
+    def _promo_caption_instruction(self, promo: str = None) -> str:
+        """Return caption prompt injection for promo, or empty string."""
+        if not promo:
+            return ""
+        cfg = self.PROMO_REGISTRY.get(promo)
+        if not cfg:
+            return ""
+        return (
+            f"\nPROMO MENTION: Naturally weave in a brief mention of {cfg['product_name']} "
+            f"({cfg['one_liner']}) — e.g. 'check out {cfg['url']}' or 'link in bio for {cfg['product_name']}'. "
+            f"Keep it subtle, one short phrase, not the focus of the caption.\n"
+        )
+
+    def _generate_caption(self, content: Dict, promo: str = None) -> str:
         """Generate contextual caption based on carousel content"""
         try:
             # Use consistent caption generation for all formats
@@ -1602,7 +1891,7 @@ REQUIREMENTS:
 - NO emojis
 - Lowercase style preferred
 {caption_cta_instruction}
-
+{self._promo_caption_instruction(promo)}
 CAPTION FORMAT (follow this structure exactly):
 [curiosity hook sentence]. [1-2 context sentences with topic keywords]. [link in bio mention if applicable]. [CTA question]
 
@@ -1675,6 +1964,75 @@ Generate caption:"""
 
         return " ".join([f"#{tag}" for tag in all_tags])
 
+    def _apply_promo(self, content: Dict, promo: str, topic: str) -> Dict:
+        """Soft-promote a product by weaving a mention into one tip and replacing the CTA slide.
+
+        Args:
+            content: Generated carousel content dict with "slides" list
+            promo: Key into PROMO_REGISTRY (e.g. "slumbersongs")
+            topic: The carousel topic for context
+
+        Returns:
+            Modified content dict with promo woven in
+        """
+        promo_config = self.PROMO_REGISTRY.get(promo)
+        if not promo_config:
+            logger.warning(f"⚠️  Unknown promo '{promo}' — skipping. Available: {list(self.PROMO_REGISTRY.keys())}")
+            return content
+
+        slides = content.get("slides", [])
+        if len(slides) < 3:
+            logger.warning("⚠️  Too few slides for promo injection — skipping")
+            return content
+
+        logger.info(f"🏷️  Applying '{promo}' promo overlay...")
+
+        # 1. Replace CTA slide (last slide) with promo CTA
+        cta_slide = slides[-1]
+        cta_slide["text"] = promo_config["cta_slide_text"]
+        cta_slide["type"] = "cta"
+
+        # 2. Weave a natural mention into ONE middle tip slide using LLM
+        # Pick a random middle slide (not hook, not CTA)
+        middle_indices = list(range(1, len(slides) - 1))
+        target_idx = random.choice(middle_indices)
+        original_text = slides[target_idx]["text"]
+
+        weave_prompt = f"""Rewrite this carousel tip to naturally include a subtle mention of {promo_config['product_name']}.
+
+ORIGINAL TIP:
+{original_text}
+
+TOPIC: {topic}
+
+PRODUCT CONTEXT:
+{promo_config['tip_weave_instruction']}
+
+RULES:
+- Keep the same tip structure and length (within ~10 words of original)
+- The mention should feel natural, not forced — like a friend's recommendation
+- Do NOT make the product the main point of the tip
+- Keep the same formatting style (lowercase if original is lowercase)
+- Return ONLY the rewritten tip text, nothing else"""
+
+        try:
+            rewritten = self.llm.chat_completion(
+                messages=[{"role": "user", "content": weave_prompt}],
+                temperature=0.7,
+                max_tokens=200,
+            ).strip().strip('"\'')
+
+            if rewritten and len(rewritten) > 10:
+                slides[target_idx]["text"] = rewritten
+                logger.info(f"   Wove promo into slide {target_idx + 1}")
+            else:
+                logger.warning("   LLM returned empty rewrite — keeping original")
+        except Exception as e:
+            logger.warning(f"   Failed to weave promo into tip: {e}")
+
+        content["slides"] = slides
+        return content
+
     def _generate_random_topic(self) -> str:
         """Generate random topic from content pillars, guided by tier priorities.
 
@@ -1697,7 +2055,10 @@ Generate caption:"""
             if self.performance_context:
                 from core.analytics.generator_integration import pick_pillar_by_tier
                 tier_pick = pick_pillar_by_tier(
-                    self.performance_context, self.config.content_pillars
+                    self.performance_context, self.config.content_pillars,
+                    context_path=self._context_path if self.config.seasonal_topics_enabled else None,
+                    llm_client=self.llm if self.config.seasonal_topics_enabled else None,
+                    recent_topics=recent_topics,
                 )
                 if tier_pick:
                     if tier_pick in self.config.content_pillars:

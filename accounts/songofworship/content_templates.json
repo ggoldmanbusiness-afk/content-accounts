@@ -1,0 +1,175 @@
+{
+  "style_guidelines": {
+    "use_tip_prefix": false,
+    "text_style": "pill",
+    "tone": "warm, reverent, scripture-grounded",
+    "voice": "conversational, like a worship pastor texting encouragement",
+    "anti_ai_rules": [
+      "NEVER use em dashes. Use commas, periods, or line breaks instead.",
+      "NEVER use these AI-slop phrases: 'this changed everything', 'game-changer', 'here's the thing', 'let that sink in', 'I can't stress this enough', 'it hit different', 'in a world where', 'at the end of the day'",
+      "NEVER use flowery filler: 'truly', 'literally', 'absolutely', 'incredibly', 'actually'",
+      "Write like a real person texting a friend. Short sentences. Imperfect grammar is fine.",
+      "No em dashes anywhere. Not in slides, not in captions, not in hooks. Use a comma or period.",
+      "Vary sentence length. Mix short punchy lines with longer ones.",
+      "Don't start every slide with the same sentence structure."
+    ],
+    "conversational_elements": [
+      "honestly",
+      "I keep coming back to this",
+      "if you're in that season",
+      "hold onto this",
+      "worth praying over",
+      "who knew"
+    ],
+    "examples": {
+      "bad_ai_slop": "this changed everything for me. the renewal happens in the hoping, not after. honestly, it hit different.",
+      "good_human": "I read this verse on my worst day and kept reading it for a week straight. something about it just stuck.",
+      "bad_preachy": "The Bible clearly states that worship through song is essential for spiritual growth",
+      "good_conversational": "there's something about hearing your name in a worship song that breaks you open. I can't explain it. you just have to experience it."
+    }
+  },
+  "formats": {
+    "habit_list": {
+      "description": "List of actionable tips/habits (hook + tips + CTA)",
+      "structure": [
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 20
+        },
+        {
+          "type": "tip",
+          "position": "2-N",
+          "max_words": 20
+        },
+        {
+          "type": "cta",
+          "position": "last",
+          "max_words": 15
+        }
+      ],
+      "prompt_template": "Generate a save-worthy carousel about {topic} for Christian faith and worship.\n\nFormat: habit_list\nSlides: {slide_count}\n\nStructure:\n- Slide 1 (Hook): Attention-grabbing opener (max 20 words). Must be SPECIFIC, include a concrete outcome, situation, or emotional moment. No generic inspirational phrases.\n- Slides 2-{tip_end}: Individual actionable points (max 20 words each). Each should be something the reader can DO, not just think about. DO NOT prefix with 'tip 1:' or 'tip 2:'. Just write the content directly. If referencing scripture, lead with the verse reference.\n- Slide {last} (CTA): Call to action encouraging saves\n\nBrand voice: {voice}\nTone: Warm, reverent, scripture-grounded, conversational\n\nCRITICAL WRITING RULES:\n- NEVER use em dashes (the long dash). Use commas or periods instead.\n- NEVER use AI-slop phrases: 'this changed everything', 'game-changer', 'here is the thing', 'let that sink in', 'I can not stress this enough', 'in a world where', 'at the end of the day'\n- NEVER use filler words: 'truly', 'literally', 'absolutely', 'incredibly', 'actually'\n- Write like a real person texting a friend. Short sentences. Imperfect grammar is fine.\n- Vary sentence length. Mix short punchy lines with longer ones.\n- Do not start every slide with the same sentence structure.\n\nIMPORTANT - Hook must be:\n- At least 50 characters\n- Include a specific outcome or situation (not generic)\n- Actionable over inspirational\n\nReturn JSON with this structure:\n{{\n  \"hook\": \"slide 1 text\",\n  \"slides\": [\n    {{\"slide_num\": 1, \"text\": \"hook text\", \"type\": \"hook\"}},\n    {{\"slide_num\": 2, \"text\": \"content text (NO tip prefix)\", \"type\": \"tip\"}},\n    ...\n    {{\"slide_num\": {last}, \"text\": \"cta text\", \"type\": \"cta\"}}\n  ],\n  \"caption\": \"Brief caption with {max_hashtags} hashtags from: {hashtags}\",\n  \"topic\": \"{topic}\"\n}}\n\nRequirements:\n- Max 20 words per slide\n- Scripture-grounded, warm, actionable\n- No preachy or performative language\n- No em dashes anywhere\n- No AI-sounding language\n- Hook score: min 12/20\n- Focus on save-worthy content\n- Actionable over inspirational\n- DO NOT prefix slides with 'tip 1:', 'tip 2:', etc."
+    },
+    "step_guide": {
+      "description": "Numbered step-by-step guide (hook + steps + CTA)",
+      "structure": [
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 20
+        },
+        {
+          "type": "step",
+          "position": "2-N",
+          "max_words": 20,
+          "numbered": true
+        },
+        {
+          "type": "cta",
+          "position": "last",
+          "max_words": 15
+        }
+      ],
+      "prompt_template": "Generate a step-by-step guide carousel about {topic} for Christian faith and worship.\n\nFormat: step_guide\nSteps: {step_count}\n\nStructure:\n- Slide 1 (Hook): Specific, outcome-driven opener (max 20 words)\n- Slides 2-{tip_end}: Numbered steps (step 1:, step 2:, etc.), max 20 words each\n- Slide {last} (CTA): Save/share call to action\n\nCRITICAL WRITING RULES:\n- NEVER use em dashes. Use commas or periods instead.\n- NEVER use AI-slop phrases: 'this changed everything', 'game-changer', 'here is the thing', 'let that sink in'\n- Write like a real person texting a friend. Short sentences. Imperfect grammar is fine.\n- No filler words: 'truly', 'literally', 'absolutely', 'incredibly', 'actually'\n\nBrand voice: {voice}\nTone: Warm, practical, scripture-grounded\n\nReturn JSON matching the habit_list structure but with step types."
+    },
+    "before_after": {
+      "description": "A 3-slide transformation carousel,hook with reaction, then before/after visual proof",
+      "structure": [
+        {
+          "type": "hook",
+          "position": 1,
+          "max_words": 12,
+          "has_image": true,
+          "has_text_overlay": true
+        },
+        {
+          "type": "before",
+          "position": 2,
+          "max_words": 0,
+          "has_image": true,
+          "has_text_overlay": false
+        },
+        {
+          "type": "after",
+          "position": 3,
+          "max_words": 0,
+          "has_image": true,
+          "has_text_overlay": false
+        }
+      ],
+      "default_slide_count": 3,
+      "image_mode": "gemini",
+      "caption_strategy": "Build curiosity about the transformation, connect to scripture, end with engagement question."
+    }
+  },
+  "hook_examples": {
+    "specific_outcome": [
+      "the one verse that got me through my darkest season",
+      "she opened this gift at her baptism and couldn't stop crying",
+      "5 prayers I say over my kids every single night",
+      "the worship song that broke me open on the worst day of my life",
+      "3 scriptures I texted a friend going through chemo"
+    ],
+    "occasion_specific": [
+      "3 baptism gifts that aren't another cross necklace",
+      "what I wish someone gave me when I lost my mom",
+      "the one gift every new believer actually needs",
+      "5 ways to make a wedding blessing unforgettable",
+      "what to give someone who just got the worst news of their life"
+    ],
+    "unexpected_twist": [
+      "I stopped praying for comfort and everything changed",
+      "the boring prayer habit that outperformed every devotional I tried",
+      "why the most meaningful gift I ever gave cost almost nothing",
+      "the worship song I almost skipped changed my whole week",
+      "I deleted my prayer journal and started doing this instead"
+    ]
+  },
+  "scoring_references": {
+    "curiosity_gap": [
+      "the real reason worship music hits different when it's personal",
+      "what nobody tells you about praying through grief",
+      "the verse that means something completely different after you lose someone",
+      "why hearing your name in a song changes everything",
+      "what actually happens when you sing scripture over your kids",
+      "the one thing missing from most baptism celebrations",
+      "the gift that made a 70-year-old man cry at his retirement party"
+    ],
+    "actionability": [
+      "5 scriptures to pray over someone starting a new chapter",
+      "the exact prayer I say over my kids before school every morning",
+      "3 ways to turn any Bible verse into a daily worship practice",
+      "what to write in a baptism card when words feel inadequate",
+      "5 worship songs for when you can't find the words to pray",
+      "how to create a meaningful family worship night in 15 minutes",
+      "3 things to say to someone going through grief that actually help"
+    ],
+    "specificity": [
+      "4 verses for the season between the prayer and the answer",
+      "the one psalm that makes sense of everything when life falls apart",
+      "3 gifts for a friend who just got diagnosed",
+      "5 prayers for someone who just lost a parent",
+      "the worship practice that changed my marriage in 2 weeks",
+      "what I gave my best friend on her baptism day (she still plays it)",
+      "3 ways to honor a faith milestone that don't involve another devotional book"
+    ],
+    "scroll_stop": [
+      "stop scrolling and pray this over someone you love right now",
+      "the gift nobody thinks of that means more than anything you can buy",
+      "your worship playlist is missing this and it shows",
+      "the most powerful thing you can give someone in grief isn't a casserole",
+      "I stopped buying Christian gifts and started doing this instead",
+      "you don't need another devotional,you need this",
+      "the 30-second worship habit that rewired my anxiety"
+    ]
+  },
+  "cta_examples": [
+    "Save this for when you need it most",
+    "Share with someone in a hard season",
+    "Save this for Sunday",
+    "Tag someone who needs this verse today",
+    "Send this to someone you're praying for",
+    "Save this for the next time words fail you",
+    "Try one of these this week"
+  ]
+}

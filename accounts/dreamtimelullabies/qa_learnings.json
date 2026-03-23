@@ -26,5 +26,68 @@
     "carousel_dir": "output/2026/02-february/2026-02-20_breastfeeding-tips-for-new-moms",
     "slide_num": 5,
     "timestamp": "2026-02-20T15:14:42"
+  },
+  {
+    "category": "scene_mismatch",
+    "description": "Phone screen in scene shows different image than the actual scene around it - avoid phones showing photos",
+    "carousel_dir": "2026-02-20_winter-outdoor-activities-for-toddlers_v2",
+    "slide_num": 7,
+    "timestamp": "2026-02-20T22:13:11"
+  },
+  {
+    "category": "furniture",
+    "description": "Kitchen has two ovens or duplicate appliances. Kitchens should have realistic, single appliance layouts.",
+    "carousel_dir": "2026-02-28_witching-hour-activities",
+    "slide_num": 4,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_consistency",
+    "description": "Kitchen or room layout changes between slides in the same carousel. Maintain the same room, furniture placement, and layout throughout all slides.",
+    "carousel_dir": "2026-02-28_witching-hour-activities",
+    "slide_num": 6,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_mismatch",
+    "description": "Kitchen and parent appear too disheveled or messy. Keep scenes clean, warm, and inviting even when depicting busy parenting moments.",
+    "carousel_dir": "2026-02-28_edible-sensory-play",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "furniture",
+    "description": "Crib placed in middle of room or floating in unrealistic position. Cribs should always be against a wall in a realistic bedroom layout.",
+    "carousel_dir": "2026-02-28_nap-transition-dropping-schedules",
+    "slide_num": 4,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_consistency",
+    "description": "Crib moves between rooms across slides (nursery to parents room). Keep the same room and furniture placement throughout the carousel.",
+    "carousel_dir": "2026-02-28_nap-transition-dropping-schedules",
+    "slide_num": 5,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_consistency",
+    "description": "Blackout shades mentioned in slide text but disappear in other slides showing the same room. If a feature is mentioned, it should be visually consistent across all slides showing that room.",
+    "carousel_dir": "2026-02-28_white-noise-and-sleep-environment",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "clothing",
+    "description": "Child shown clothed during water play or bath activities. Children doing water play should be in appropriate swimwear or diaper, not fully clothed.",
+    "carousel_dir": "2026-02-28_bath-time-sensory-play-ideas",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
+  },
+  {
+    "category": "scene_mismatch",
+    "description": "Water appears dirty or murky in play/bath scenes. Water should always appear clean and clear.",
+    "carousel_dir": "2026-02-28_bath-time-sensory-play-ideas",
+    "slide_num": null,
+    "timestamp": "2026-02-28T11:30:00"
   }
 ]

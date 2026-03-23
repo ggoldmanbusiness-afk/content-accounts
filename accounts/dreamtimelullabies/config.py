@@ -199,6 +199,9 @@ QA_RULES = {
     "image_qa_prompt": "Check for: child count (should be 1 unless topic involves siblings), scene matches topic, clothing appropriate for scene, no cribs in non-bedroom rooms, warm inviting aesthetic.",
 }
 
+# Seasonal topic injection
+SEASONAL_TOPICS_ENABLED = True
+
 # Platform profiles for analytics scraping
 PLATFORM_PROFILES = {
     "tiktok": "dreamtimelullabies",

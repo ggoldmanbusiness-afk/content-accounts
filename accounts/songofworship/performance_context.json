@@ -1,0 +1,116 @@
+{
+  "last_updated": "2026-03-22",
+  "sample_size": 0,
+  "key_learnings": [
+    "1. NEW ACCOUNT \u2014 no performance data yet. Starting in full explore mode.",
+    "2. Ported from DreamtimeLullabies: habit_list as default format, 5-slide default, specificity-weighted hooks.",
+    "3. Hypothesis: scripture/devotional carousels will drive saves (faith niche is a known save-machine).",
+    "4. Hypothesis: gifting/occasion content will drive shares and comments (emotional, tag-a-friend dynamic).",
+    "5. 80/20 rule: 80% faith value content, 20% product-adjacent. Faith community is sensitive to inauthenticity."
+  ],
+  "format_targets": {
+    "habit_list": 0.5,
+    "step_guide": 0.2,
+    "before_after": 0.15,
+    "how_to": 0.15
+  },
+  "consolidated_pillars": {
+    "scripture_and_devotional": {
+      "target_posts_per_month": 8,
+      "sub_topics": [
+        "verses for grief",
+        "verses for joy and gratitude",
+        "verses for doubt and waiting",
+        "daily worship habits",
+        "prayer practices"
+      ],
+      "rationale": "Save-machine content \u2014 builds audience and authority in the faith niche"
+    },
+    "gifting_and_occasions": {
+      "target_posts_per_month": 5,
+      "sub_topics": [
+        "baptism gifts",
+        "wedding blessings",
+        "comfort in grief",
+        "milestone celebrations",
+        "meaningful gifts beyond material"
+      ],
+      "rationale": "Conversion-driving content \u2014 directly relates to SongOfWorship product use cases"
+    },
+    "behind_the_scenes": {
+      "target_posts_per_month": 3,
+      "sub_topics": [
+        "song stories and meaning",
+        "how worship songs are crafted",
+        "the power of hearing your name"
+      ],
+      "rationale": "Product storytelling \u2014 bridges faith content with product awareness"
+    }
+  },
+  "retire_pillars": [],
+  "hook_requirements": {
+    "min_character_count": 50,
+    "must_include_specific_outcome": true,
+    "banned_patterns": [
+      "hashtag-only",
+      "generic_question_without_specificity",
+      "generic_inspirational_without_action"
+    ]
+  },
+  "visual_insights": {
+    "top_performing": {},
+    "hook_recipe": {},
+    "sample_size": 0
+  },
+  "exploration_ratio": 0.4,
+  "optimal_slide_count": 5,
+  "content_angle": "Actionable over inspirational \u2014 'pray this specific verse over your friend' beats 'prayer is powerful'",
+  "pillar_priority_tiers": {
+    "tier_1_proven": [],
+    "tier_2_promising": [
+      "scripture for seasons of grief",
+      "scripture for seasons of joy",
+      "daily worship habits",
+      "baptism gift ideas",
+      "meaningful gifts for believers"
+    ],
+    "tier_3_explore": [
+      "verses for the season between prayer and answer",
+      "worship songs for when you can't find words to pray",
+      "what to give someone who just got diagnosed",
+      "how to create family worship nights",
+      "prayers for someone starting chemo",
+      "faith milestone celebrations beyond devotional books",
+      "the power of hearing your name in worship",
+      "wedding blessings that aren't generic",
+      "comfort gifts for someone who lost a parent",
+      "scripture to pray over newborns",
+      "faith gifts for confirmation",
+      "worship practices that help with anxiety",
+      "Easter gifts that point to the resurrection",
+      "Christmas gifts that center on Christ",
+      "graduation blessings for young believers"
+    ]
+  },
+  "seasonal_topics": {
+    "christmas_2026": [
+      "5 Christmas gifts that point back to the manger",
+      "the one gift every believer actually wants this Christmas",
+      "3 scriptures to pray over your family on Christmas morning"
+    ],
+    "easter_2026": [
+      "what to give someone being baptized on Easter Sunday",
+      "5 resurrection verses to carry with you all week",
+      "the Easter worship habit that changed our family"
+    ],
+    "mothers_day_2026": [
+      "the gift that made my mom cry on Mother's Day (it wasn't flowers)",
+      "5 verses every mom needs to hear on her hardest days"
+    ],
+    "fathers_day_2026": [
+      "what I gave my dad after 30 years of him leading our family in faith",
+      "3 prayers every father needs spoken over him"
+    ]
+  },
+  "explore_targets": {}
+}

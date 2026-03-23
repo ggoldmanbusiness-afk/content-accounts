@@ -163,6 +163,9 @@ class AccountConfig(BaseModel):
     # Caption CTA suffix (optional, appended if LLM doesn't include "link in bio")
     caption_cta_suffix: str = Field(default="", description="Fallback CTA text appended to caption if link-in-bio missing")
 
+    # Seasonal topic injection
+    seasonal_topics_enabled: bool = Field(default=False, description="Enable seasonal/holiday topic injection")
+
     # Platform profiles for analytics scraping
     platform_profiles: Dict[str, str] = Field(
         default_factory=dict,

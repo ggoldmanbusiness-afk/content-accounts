@@ -4,34 +4,79 @@
   "max_history_size": 10,
   "topics": [
     {
-      "topic": "sleep schedules",
-      "generated_at": "2026-02-05T14:38:23.121414",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_sleep-schedules"
+      "topic": "outdoor activities for toddlers",
+      "generated_at": "2026-03-22T22:51:01.057883",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-22_outdoor-activities-for-toddlers"
     },
     {
-      "topic": "nap transitions",
-      "generated_at": "2026-02-05T14:16:50.000790",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_nap-transitions"
+      "topic": "nature walk scavenger hunt that turned my clingy 2 year old into an explorer",
+      "generated_at": "2026-03-15T20:40:10.227637",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_nature-walk-scavenger-hunt-that-turned-my-clingy-2-year-old_v2"
     },
     {
-      "topic": "toddler tantrums",
-      "generated_at": "2026-02-05T13:54:30.644691",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_toddler-tantrums"
+      "topic": "nap transition signs your baby is ready to drop a nap",
+      "generated_at": "2026-03-15T20:36:22.781601",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_nap-transition-signs-your-baby-is-ready-to-drop-a-nap_v2"
     },
     {
-      "topic": "sleep regression",
-      "generated_at": "2026-02-05T13:36:28.142603",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_sleep-regression"
+      "topic": "stacking and sorting games from stuff in your recycling bin",
+      "generated_at": "2026-03-15T20:32:30.972613",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_stacking-and-sorting-games-from-stuff-in-your-recycling-bin_v2"
     },
     {
-      "topic": "nap transitions",
-      "generated_at": "2026-02-05T13:28:53.270042",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_nap-transitions"
+      "topic": "laundry basket games that kept my toddler busy for an entire hour",
+      "generated_at": "2026-03-15T20:28:43.163092",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_laundry-basket-games-that-kept-my-toddler-busy-for-an_v2"
     },
     {
-      "topic": "bedtime routines",
-      "generated_at": "2026-02-05T13:03:24.223970",
-      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/02-february/2026-02-05_bedtime-routines"
+      "topic": "activities for 9 month olds in that weird not crawling not walking phase",
+      "generated_at": "2026-03-15T20:24:52.511511",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_activities-for-9-month-olds-in-that-weird-not-crawling-not_v2"
+    },
+    {
+      "topic": "muffin tin activities for babies and toddlers",
+      "generated_at": "2026-03-15T20:21:03.241630",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_muffin-tin-activities-for-babies-and-toddlers_v2"
+    },
+    {
+      "topic": "contact paper activities that keep toddlers busy for 30 minutes",
+      "generated_at": "2026-03-15T20:17:10.188344",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_contact-paper-activities-that-keep-toddlers-busy-for-30_v2"
+    },
+    {
+      "topic": "tape activities that cost nothing and kept my toddler busy all morning",
+      "generated_at": "2026-03-15T20:09:53.540503",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_tape-activities-that-cost-nothing-and-kept-my-toddler-busy_v4"
+    },
+    {
+      "topic": "tape activities that cost nothing and kept my toddler busy all morning",
+      "generated_at": "2026-03-15T18:09:40.145180",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_tape-activities-that-cost-nothing-and-kept-my-toddler-busy_v3"
+    },
+    {
+      "topic": "tape activities that cost nothing and kept my toddler busy all morning",
+      "generated_at": "2026-03-15T18:03:40.134294",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_tape-activities-that-cost-nothing-and-kept-my-toddler-busy_v2"
+    },
+    {
+      "topic": "nature walk scavenger hunt that turned my clingy 2 year old into an explorer",
+      "generated_at": "2026-03-15T17:45:41.815687",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_nature-walk-scavenger-hunt-that-turned-my-clingy-2-year-old"
+    },
+    {
+      "topic": "nap transition signs your baby is ready to drop a nap",
+      "generated_at": "2026-03-15T17:42:13.449204",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_nap-transition-signs-your-baby-is-ready-to-drop-a-nap"
+    },
+    {
+      "topic": "sleep regression survival by age",
+      "generated_at": "2026-03-15T17:38:15.362504",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_sleep-regression-survival-by-age"
+    },
+    {
+      "topic": "stacking and sorting games from stuff in your recycling bin",
+      "generated_at": "2026-03-15T17:34:46.756160",
+      "output_dir": "/Users/grantgoldman/Google Drive/My Drive/DreamtimeLullabies/2026/03-march/2026-03-15_stacking-and-sorting-games-from-stuff-in-your-recycling-bin"
     }
   ]
 }

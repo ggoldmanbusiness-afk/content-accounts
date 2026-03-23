@@ -1,0 +1,52 @@
+{
+  "brief_id": "tiktok_7602085843410390279_dreamtimelullabies",
+  "source_blueprint_id": "tiktok_7602085843410390279",
+  "target_account": "dreamtimelullabies",
+  "adaptation_mode": "format_clone",
+  "slides": [
+    {
+      "slide_number": 1,
+      "role": "hook",
+      "copy": "me after looking back at my baby's sleep journey from month 2 to 9",
+      "visual_direction": "Parent with surprised/amazed expression, hand on chest or covering mouth in disbelief, warm lighting, relatable and authentic emotion",
+      "layout": "minimal_checklist",
+      "word_count_target": 14
+    },
+    {
+      "slide_number": 2,
+      "role": "content",
+      "copy": "",
+      "visual_direction": "BEFORE: Baby awake at night, parent looking exhausted holding baby in dimly lit room, clock showing 2:47 AM, tired parent expression, messy hair",
+      "layout": "minimal_checklist",
+      "word_count_target": 0
+    },
+    {
+      "slide_number": 3,
+      "role": "content",
+      "copy": "",
+      "visual_direction": "AFTER: Baby sleeping peacefully in crib, same parent looking refreshed and smiling in doorway, clock showing 7:15 AM, natural morning light, complete transformation",
+      "layout": "minimal_checklist",
+      "word_count_target": 0
+    }
+  ],
+  "caption": {
+    "text": "UPDATE: I documented every single thing that worked (and what didn't) in our free sleep guide if you need it!! Link in bio \ud83d\udc46",
+    "hashtags": [
+      "newmom",
+      "momlife",
+      "parentingtips",
+      "babytips"
+    ]
+  },
+  "visual_direction": {
+    "color_palette": [
+      "#E8F4F8",
+      "#AED6F1",
+      "#D5B8E8"
+    ],
+    "text_color": "#2C3E50",
+    "font_style": "clean_sans_serif",
+    "aesthetic": "text_only_slides"
+  },
+  "generation_notes": ""
+}

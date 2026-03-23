@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -70,8 +71,13 @@ class Recommender:
         response = self.llm.chat_completion(
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
-            max_tokens=2000
+            max_tokens=4000
         )
+
+        # Strip markdown code fences if present
+        response = re.sub(r'```json\s*', '', response)
+        response = re.sub(r'```\s*', '', response)
+        response = response.strip()
 
         try:
             recommendations = json.loads(response)
@@ -79,7 +85,14 @@ class Recommender:
             start = response.find("[")
             end = response.rfind("]") + 1
             if start >= 0 and end > start:
-                recommendations = json.loads(response[start:end])
+                raw = response[start:end]
+                # Strip trailing commas before } or ]
+                raw = re.sub(r',\s*([}\]])', r'\1', raw)
+                try:
+                    recommendations = json.loads(raw)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse recommendations: {response[:500]}")
+                    return []
             else:
                 logger.error(f"Failed to parse recommendations: {response[:200]}")
                 return []

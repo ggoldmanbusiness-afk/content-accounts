@@ -1,0 +1,459 @@
+{
+  "blueprint_id": "tiktok_7602372454673141023",
+  "source_url": "https://www.tiktok.com/@beautywithvalerie/photo/7602372454673141023",
+  "source_platform": "tiktok",
+  "source_author": "beautywithvalerie",
+  "source_post_id": "7602372454673141023",
+  "content_type": "carousel",
+  "post_type": "hybrid",
+  "metrics": {
+    "views": 196600,
+    "likes": 1958,
+    "comments": 9,
+    "shares": 451,
+    "saves": 988,
+    "engagement_rate": 0.017325
+  },
+  "visual_analysis": {
+    "post_type": "hybrid",
+    "text_density": "high",
+    "slide_count": 7,
+    "slides": [
+      {
+        "slide_number": 1,
+        "text_overlays": [
+          "Things to avoid with newborns..."
+        ],
+        "visual_description": "A newborn baby lying on white bed sheets.",
+        "subjects": [
+          "newborn"
+        ],
+        "mood": "calm",
+        "layout": "centered_text_over_photo",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#C0C0C0"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "center",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "null",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "sentence_case",
+          "text_effects": [
+            "shadow"
+          ],
+          "background_treatment": "none",
+          "text_to_image_ratio": 0.5,
+          "text_hierarchy": "medium bold header"
+        }
+      },
+      {
+        "slide_number": 2,
+        "text_overlays": [
+          "Water \u274c",
+          "Babies under 6 months should not drink primarily water. They get all the hydration they need from breast milk or formula"
+        ],
+        "visual_description": "A hand holds a baby bottle in a kitchen setting.",
+        "subjects": [
+          "baby bottle",
+          "hand"
+        ],
+        "mood": "informative",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#D3D3D3"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "top",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "small",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "mixed",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "solid_color_block",
+          "text_to_image_ratio": 0.6,
+          "text_hierarchy": "medium bold header, smaller regular body below"
+        }
+      },
+      {
+        "slide_number": 3,
+        "text_overlays": [
+          "\u274c pillow",
+          "Newborns should sleep on their backs on a firm, flat mattress. - it helps prevent flat head syndrome - it reduces the risk of SIDS (Sudden infant death syndrome)"
+        ],
+        "visual_description": "A baby sleeping on a mattress.",
+        "subjects": [
+          "baby",
+          "mattress"
+        ],
+        "mood": "caring",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#B0B0B0"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "center",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "small",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "sentence_case",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "none",
+          "text_to_image_ratio": 0.7,
+          "text_hierarchy": "medium bold headline, smaller regular body below"
+        }
+      },
+      {
+        "slide_number": 4,
+        "text_overlays": [
+          "\u274c Avoid harmful skincare products",
+          "Babies are born with vernix and extremely sensitive skin. Using products with harsh chemicals can cause irritation and even serious reactions. That's why my baby's pediatrician recommended the Prove It app it checks ingredient safety and suggests safer alternatives"
+        ],
+        "visual_description": "A hand holds a phone displaying the Prove It app.",
+        "subjects": [
+          "hand",
+          "phone"
+        ],
+        "mood": "protective",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#A9A9A9"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "bottom",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "small",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "sentence_case",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "solid_color_block",
+          "text_to_image_ratio": 0.8,
+          "text_hierarchy": "medium bold headline, smaller regular body below"
+        }
+      },
+      {
+        "slide_number": 5,
+        "text_overlays": [
+          "Car seats are not designed for long periods of sleep \u274c"
+        ],
+        "visual_description": "A baby in a car seat with an adult hand touching the baby.",
+        "subjects": [
+          "baby",
+          "car seat",
+          "hand"
+        ],
+        "mood": "alert",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#BEBEBE"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "top",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "null",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "sentence_case",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "solid_color_block",
+          "text_to_image_ratio": 0.6,
+          "text_hierarchy": "medium bold header"
+        }
+      },
+      {
+        "slide_number": 6,
+        "text_overlays": [
+          "Bouncer/swing (too much time) \u274c",
+          "The same applies to baby bouncers. A baby back should not remain arched for more than 2 hours"
+        ],
+        "visual_description": "A baby being held by an adult.",
+        "subjects": [
+          "baby",
+          "adult"
+        ],
+        "mood": "informative",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#CDCDCD"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "top",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "small",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "mixed",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "solid_color_block",
+          "text_to_image_ratio": 0.6,
+          "text_hierarchy": "medium bold headline, smaller regular body below"
+        }
+      },
+      {
+        "slide_number": 7,
+        "text_overlays": [
+          "\u274c Direct sunlight",
+          "Newborns have very delicate skin that is sensitive to the Sun. Avoid direct sunlight and protect them with clothing when outdoors"
+        ],
+        "visual_description": "A baby lying in sunlight, partially covered.",
+        "subjects": [
+          "baby"
+        ],
+        "mood": "caring",
+        "layout": "split_layout",
+        "dominant_colors": [
+          "#FFFFFF",
+          "#DCDCDC"
+        ],
+        "font_style": "bold_sans_serif",
+        "text_position": "center",
+        "text_styling": {
+          "headline_size": "medium",
+          "body_size": "small",
+          "text_color": "#000000",
+          "headline_color": "null",
+          "text_weight": "bold",
+          "text_case": "sentence_case",
+          "text_effects": [
+            "none"
+          ],
+          "background_treatment": "none",
+          "text_to_image_ratio": 0.7,
+          "text_hierarchy": "medium bold headline, smaller regular body below"
+        }
+      }
+    ],
+    "overall_visual_style": {
+      "aesthetic": "Minimalistic with a focus on clarity and function. Emphasis on guiding parents with dos and don'ts for newborns.",
+      "color_palette": [
+        "#FFFFFF",
+        "#000000",
+        "#D3D3D3"
+      ],
+      "consistency": "Consistent use of white backgrounds, bold sans-serif text, and informative tone.",
+      "visual_narrative": "N/A",
+      "brand_elements": "Recurring visual motifs include stop symbols and consistent text styling across slides."
+    }
+  },
+  "format_analysis": {
+    "format_description": "Educational carousel presenting safety warnings for newborn care. Each slide pairs a visual demonstration of the item/scenario being warned against with text explaining why it's dangerous. The format uses \u274c emoji consistently to reinforce prohibition messaging. Slide 4 includes a product recommendation (Prove It app) embedded within the safety advice, creating a native advertising moment within educational content.",
+    "slide_structure": [
+      {
+        "slide_number": 1,
+        "role": "hook",
+        "pattern": "topic_announcement",
+        "text_template": "Things to avoid with [target audience]...",
+        "word_count": 4
+      },
+      {
+        "slide_number": 2,
+        "role": "content",
+        "pattern": "list_item",
+        "text_template": "[Item] \u274c | [Age group] should not [action]. They get [benefit] from [alternative source]",
+        "word_count": 21
+      },
+      {
+        "slide_number": 3,
+        "role": "content",
+        "pattern": "list_item",
+        "text_template": "\u274c [item] | [Target group] should [correct action]. - it helps [benefit 1] - it reduces [risk/benefit 2]",
+        "word_count": 27
+      },
+      {
+        "slide_number": 4,
+        "role": "content",
+        "pattern": "list_item_with_product_placement",
+        "text_template": "\u274c Avoid [harmful category] | [Audience] [natural state]. Using [bad practice] can cause [consequences]. That's why [authority figure] recommended [product] it [product benefit]",
+        "word_count": 34
+      },
+      {
+        "slide_number": 5,
+        "role": "content",
+        "pattern": "list_item",
+        "text_template": "[Items] are not designed for [misuse] \u274c",
+        "word_count": 9
+      },
+      {
+        "slide_number": 6,
+        "role": "content",
+        "pattern": "list_item",
+        "text_template": "[Item] (too much time) \u274c | The same applies to [item variation]. A [body part] should not [position] for more than [time limit]",
+        "word_count": 24
+      },
+      {
+        "slide_number": 7,
+        "role": "content",
+        "pattern": "list_item",
+        "text_template": "\u274c [Hazard] | [Target group] have [vulnerability description]. Avoid [hazard] and protect them with [solution] when [context]",
+        "word_count": 22
+      }
+    ],
+    "visual_sequence": {
+      "narrative_arc": "Visuals directly illustrate each prohibited item or scenario, creating a 'show what NOT to do' demonstration. Each image provides concrete visual reference for the abstract safety rule, making warnings tangible and memorable. The sequence moves from consumables (water) to sleep safety (pillow, car seat, bouncer) to external hazards (skincare, sunlight).",
+      "subject_progression": [
+        "Newborn baby on bed (establishes subject)",
+        "Hand holding baby bottle (water warning)",
+        "Baby on flat mattress without pillow (sleep safety)",
+        "Phone displaying Prove It app interface (product placement)",
+        "Baby in car seat (positional sleep warning)",
+        "Baby in bouncer held by adult (extended positioning warning)",
+        "Baby in sunlight with blanket (environmental hazard)"
+      ],
+      "curation_strategy": "Visuals serve as literal demonstrations of each warning, creating a visual checklist parents can mentally reference. The hybrid approach ensures comprehension even without sound\u2014text provides medical reasoning while images show real-world application. Slide 4 breaks pattern by showing a phone app rather than the baby, signaling the sponsored/promotional nature of that segment."
+    },
+    "information_architecture": {
+      "flow": "Title slide followed by six discrete safety warnings presented as independent list items. Each warning follows consistent structure: prohibition statement + explanatory reasoning. No narrative build\u2014each slide is self-contained knowledge unit that could be reordered without losing coherence.",
+      "pacing": "even",
+      "content_density": "high",
+      "where_value_lives": "slides"
+    }
+  },
+  "visual_copy_analysis": {
+    "primary_framework": "PAS",
+    "framework_confidence": 0.85,
+    "tone": "authoritative",
+    "copy_techniques": [
+      "curiosity_gap",
+      "emotional_trigger",
+      "specificity",
+      "authority",
+      "social_proof",
+      "number_promise"
+    ],
+    "power_words": [
+      "avoid",
+      "harmful",
+      "prevent",
+      "risk",
+      "death",
+      "syndrome",
+      "serious",
+      "irritation",
+      "delicate",
+      "sensitive",
+      "protect",
+      "danger"
+    ],
+    "slide_by_slide_analysis": {
+      "slide_1": {
+        "techniques": [
+          "curiosity_gap",
+          "number_promise"
+        ],
+        "framework_element": "Problem setup",
+        "notes": "Opens with ellipsis to create suspense and promise of multiple items"
+      },
+      "slide_2": {
+        "techniques": [
+          "specificity",
+          "authority"
+        ],
+        "framework_element": "Problem identification",
+        "notes": "Specific age threshold (6 months), explains the why behind the rule"
+      },
+      "slide_3": {
+        "techniques": [
+          "emotional_trigger",
+          "specificity",
+          "authority"
+        ],
+        "framework_element": "Problem + Agitation",
+        "notes": "SIDS mention creates fear/urgency, bullet points add credibility, medical terminology (flat head syndrome)"
+      },
+      "slide_4": {
+        "techniques": [
+          "emotional_trigger",
+          "social_proof",
+          "authority"
+        ],
+        "framework_element": "Problem + Agitate + Solution",
+        "notes": "Most complete PAS structure - harmful products (problem), serious reactions (agitate), pediatrician recommendation + app (solution)"
+      },
+      "slide_5": {
+        "techniques": [
+          "specificity"
+        ],
+        "framework_element": "Problem identification",
+        "notes": "Direct statement of limitation, no elaboration"
+      },
+      "slide_6": {
+        "techniques": [
+          "specificity"
+        ],
+        "framework_element": "Problem identification",
+        "notes": "Specific time limit (2 hours), anatomical detail (arched back)"
+      },
+      "slide_7": {
+        "techniques": [
+          "emotional_trigger",
+          "specificity"
+        ],
+        "framework_element": "Problem + mini-solution",
+        "notes": "Emphasizes vulnerability (delicate, sensitive), provides protective action"
+      }
+    },
+    "overall_structure_notes": "The series follows PAS framework: Slide 1 sets up problems to avoid, Slides 2-7 identify specific problems and agitate with health consequences (SIDS, irritation, sensitivity). Slide 4 uniquely provides a solution (Prove It app). The copy leverages parental fear effectively while maintaining educational authority. Heavy use of \u274c emoji reinforces prohibition/danger theme."
+  },
+  "caption_analysis": {
+    "primary_framework": "4Ps",
+    "hook_technique": "bold_claim",
+    "cta_type": "save",
+    "hashtag_strategy": "minimal",
+    "hashtag_count": 1,
+    "caption_length": "short",
+    "tone": "authoritative",
+    "original_caption": "#ProveIt "
+  },
+  "virality": {
+    "virality_score": 78,
+    "key_factors": [
+      "Taps into primal parental fear and protective instincts, making new parents compulsively engage with content that could prevent harm to their vulnerable newborns.",
+      "High save-worthiness as a reference checklist that parents will want to revisit and share with caregivers, grandparents, and babysitters who may not know modern safety standards.",
+      "Leverages authority positioning through specific medical reasoning (suffocation risks, developmental concerns) rather than vague warnings, building trust and credibility.",
+      "The \u274c emoji creates instant visual pattern recognition across slides, allowing viewers to quickly scan and absorb multiple warnings in a single sitting.",
+      "Addresses knowledge gaps between generations\u2014many warnings contradict 'old school' parenting advice, giving parents ammunition for difficult conversations with older relatives.",
+      "Carousel format encourages completion behavior and multiple slide views, artificially inflating engagement metrics as users swipe through all safety warnings."
+    ],
+    "format_contribution": "The carousel structure transforms anxiety-inducing safety information into digestible, non-overwhelming chunks that feel actionable rather than paralyzing. Each self-contained slide allows selective sharing ('send slide 3 to grandma about blankets') and creates multiple engagement touchpoints as users swipe through. The modular format also makes the content feel comprehensive without requiring a time commitment\u2014users can consume all six warnings in under 30 seconds while feeling educated and responsible.",
+    "visual_contribution": "The clean, pastel aesthetic softens inherently scary subject matter, making life-or-death safety warnings feel approachable rather than alarmist. White backgrounds with minimal visual clutter ensure text legibility and rapid comprehension, critical for time-starved parents scrolling during brief moments. The consistent visual demonstration paired with each warning provides immediate context without requiring users to read carefully, enabling quick pattern recognition of 'dangerous thing + why it's bad' that works even with sound off.",
+    "copy_contribution": "The authoritative tone combined with PAS (Problem-Agitate-Solution) framework creates urgency without hysteria\u2014each slide identifies a specific danger, explains the medical consequence, then implicitly positions the reader as a good parent for now knowing better. Specificity ('suffocation risk,' 'hip dysplasia') over vague fear-mongering builds credibility while emotional triggers ensure the content feels personally relevant. The curiosity gap in the caption ('what are the 6 things?') combined with number promise creates completion anxiety, while the save CTA transforms passive viewers into active curators who bookmark for future reference.",
+    "replicability": "high",
+    "replicability_notes": "The format is highly replicable\u2014simple slide design, consistent emoji usage, and list-based structure require minimal design skills. The parenting safety niche is evergreen with endless subtopics (feeding, sleep, bathing, travel). However, true replication requires subject matter credibility and research to provide specific medical reasoning rather than generic warnings. The embedded product recommendation (Prove It app) is harder to replicate without authentic integration. Success depends on targeting an audience with high-stakes decision anxiety (new parents, pet owners, first-time homebuyers) where authoritative checklists provide emotional relief."
+  },
+  "tags": [
+    "proveit"
+  ],
+  "niche": ""
+}
