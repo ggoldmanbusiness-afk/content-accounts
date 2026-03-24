@@ -495,6 +495,11 @@ class BaseContentGenerator:
                 if result["status"] == "warn":
                     logger.info(f"   ⚠️  {name}: {result['message']}")
 
+        # 10. Generate TikTok slideshow video
+        video_path = self._generate_slideshow_video(slides_dir, output_dir, num_slides)
+        if video_path:
+            logger.info(f"   Video: {video_path.name}")
+
         logger.info(f"✅ Carousel created: {output_dir}")
         logger.info(f"   Slides: {num_slides}")
         logger.info(f"   Caption: {caption_path}")
@@ -1394,6 +1399,91 @@ Generate {len(slides_text)} contextual scene descriptions:"""
 
         # Ultimate fallback
         return "Professional setting, modern workspace, authentic moment"
+
+    def _generate_slideshow_video(self, slides_dir: Path, output_dir: Path, num_slides: int) -> Optional[Path]:
+        """Generate a TikTok-optimized slideshow video from carousel slides using FFmpeg.
+
+        Timing: 2s hook, 3s content slides, 3s CTA
+        Transition: 0.3s hard slideleft, 60fps
+        """
+        import subprocess
+        import shutil
+
+        if not shutil.which("ffmpeg"):
+            logger.warning("FFmpeg not found, skipping video generation")
+            return None
+
+        try:
+            video_path = output_dir / "slideshow.mp4"
+
+            # Build FFmpeg command
+            hook_duration = 2.0
+            content_duration = 3.0
+            cta_duration = 3.0
+            transition_duration = 0.3
+
+            # Determine duration per slide
+            durations = []
+            for i in range(num_slides):
+                if i == 0:
+                    durations.append(hook_duration)
+                elif i == num_slides - 1:
+                    durations.append(cta_duration)
+                else:
+                    durations.append(content_duration)
+
+            # Build input args
+            inputs = []
+            for i in range(num_slides):
+                slide_path = slides_dir / f"slide_{i+1:02d}.png"
+                if not slide_path.exists():
+                    logger.warning(f"Slide not found: {slide_path}, skipping video")
+                    return None
+                inputs.extend(["-loop", "1", "-t", str(durations[i]), "-framerate", "60", "-i", str(slide_path)])
+
+            # Build xfade filter chain
+            if num_slides < 2:
+                return None
+
+            filter_parts = []
+            offset = durations[0] - transition_duration
+            for i in range(num_slides - 1):
+                in_label = f"[{i}]" if i == 0 else f"[v{i-1:02d}]"
+                out_label = f"[v{i:02d}]"
+                xfade = f"{in_label}[{i+1}]xfade=transition=slideleft:duration={transition_duration}:offset={offset:.1f}{out_label}"
+                filter_parts.append(xfade)
+                if i < num_slides - 2:
+                    offset += durations[i+1] - transition_duration
+
+            # Add format to the last filter
+            last = filter_parts[-1]
+            last_label = last.split("]")[-1]
+            filter_parts[-1] = last.rstrip(f"]{last_label}").rsplit("[", 1)[0]
+            # Rebuild: replace last output label with format
+            final_label = f"v{num_slides-2:02d}"
+            filter_parts[-1] = filter_parts[-1] + f"[{final_label}]"
+            filter_parts.append(f"[{final_label}]format=yuv420p[v]")
+
+            filter_complex = ";".join(filter_parts)
+
+            cmd = ["ffmpeg", "-y"] + inputs + [
+                "-filter_complex", filter_complex,
+                "-map", "[v]",
+                "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-r", "60",
+                str(video_path)
+            ]
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode != 0:
+                logger.warning(f"FFmpeg failed: {result.stderr[-200:]}")
+                return None
+
+            logger.info(f"🎬 Slideshow video generated: {video_path.name}")
+            return video_path
+
+        except Exception as e:
+            logger.warning(f"Video generation failed (continuing): {e}")
+            return None
 
     def _resize_to_instagram(self, img: Image.Image) -> Image.Image:
         """Resize/crop to exact 9:16 aspect ratio (1080x1920)"""
